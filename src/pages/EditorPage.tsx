@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
-import { Box, Button, Typography, Card, CardContent, Stack } from '@mui/material';
+import { Box, Typography, Card, CardContent, Stack, Grid } from '@mui/material';
 import { useProjectStore } from '../store/projectStore';
 import { useDataStore } from '../store/dataStore';
 import { useEditorStore } from '../store/editorStore';
-import AddIcon from '@mui/icons-material/Add';
+import { ProjectSelector } from '../components/ProjectPanel/ProjectSelector';
+import { JsonExport } from '../components/ImportExport/JsonExport';
 
 function EditorPage() {
-  const projects = useProjectStore((state) => state.projects);
-  const createProject = useProjectStore((state) => state.createProject);
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
   const activeProjectData = useProjectStore((state) => state.getActiveProjectData());
 
@@ -24,62 +23,70 @@ function EditorPage() {
   }, [activeProjectId, syncWithProject, syncEditorWithProject]);
 
   return (
-    <Box>
-      <Stack spacing={2}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h5">Editor</Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => createProject(`Project ${projects.length + 1}`)}
-          >
-            New Project
-          </Button>
+    <Grid container spacing={3}>
+      {/* Left panel: Project selector */}
+      <Grid size={{ xs: 12, sm: 4 }}>
+        <Box>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Projects
+          </Typography>
+          <ProjectSelector />
         </Box>
+      </Grid>
 
+      {/* Right panel: Editor content */}
+      <Grid size={{ xs: 12, sm: 8 }}>
         {!activeProjectId ? (
           <Card>
-            <CardContent>
-              <Typography color="textSecondary">No project selected</Typography>
-              <Button
-                variant="contained"
-                sx={{ mt: 2 }}
-                onClick={() => createProject('New Project')}
-              >
-                Create First Project
-              </Button>
+            <CardContent sx={{ textAlign: 'center', py: 4 }}>
+              <Typography color="textSecondary">Select or create a project to begin</Typography>
             </CardContent>
           </Card>
         ) : (
-          <>
+          <Stack spacing={2}>
             <Card>
               <CardContent>
-                <Typography variant="h6">Project Info</Typography>
-                <Typography>Name: {activeProjectData?.name}</Typography>
-                <Typography>Work Groups: {workGroups.length}</Typography>
+                <Typography variant="h6" gutterBottom>
+                  {activeProjectData?.name}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Work Groups: {workGroups.length}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Last modified: {new Date(activeProjectData?.lastModified || 0).toLocaleString()}
+                </Typography>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent>
-                <Typography variant="h6">WorkGroups</Typography>
-                {workGroups.length === 0 ? (
-                  <Typography color="textSecondary">No work groups</Typography>
-                ) : (
+                <Typography variant="h6" gutterBottom>
+                  Export
+                </Typography>
+                <JsonExport />
+              </CardContent>
+            </Card>
+
+            {workGroups.length > 0 && (
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    WorkGroups ({workGroups.length})
+                  </Typography>
                   <Stack spacing={1}>
                     {workGroups.map((wg, i) => (
-                      <Typography key={i}>
-                        {i + 1}. {wg.Name} ({wg.Works.length} works)
+                      <Typography key={i} variant="body2">
+                        {i + 1}. <strong>{wg.Name}</strong> ({wg.Works.length} works)
                       </Typography>
                     ))}
                   </Stack>
-                )}
-              </CardContent>
-            </Card>
-          </>
+                </CardContent>
+              </Card>
+            )}
+          </Stack>
         )}
-      </Stack>
-    </Box>
+      </Grid>
+    </Grid>
   );
 }
 
