@@ -19,6 +19,7 @@ import {
   FormControlLabel,
   Switch,
   Grid,
+  MenuItem,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -26,8 +27,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useDataStore } from '../../store/dataStore';
+import { useEditorStore } from '../../store/editorStore';
 import type { Train } from '../../types/trvis';
 import { TimetableGrid } from '../TimetableEditor/TimetableGrid';
+import { generateTimetableFromPattern } from '../../utils/trainGenerator';
 import { v4 as uuidv4 } from 'uuid';
 
 interface TrainEditorProps {
@@ -47,12 +50,20 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
   const deleteTrain = useDataStore((state) => state.deleteTrain);
   const cloneTrain = useDataStore((state) => state.cloneTrain);
 
+  const trainTypePatterns = useEditorStore((state) => state.trainTypePatterns);
+  const stations = useEditorStore((state) => state.stations);
+  const getLine = useEditorStore((state) => state.getLine);
+  const getTrainTypePattern = useEditorStore((state) => state.getTrainTypePattern);
+
   const work = getWork(workGroupIndex, workIndex);
   const [editingTrain, setEditingTrain] = useState<EditingTrain | null>(null);
   const [editTrainDialogOpen, setEditTrainDialogOpen] = useState(false);
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
   const [cloneTrainIndex, setCloneTrainIndex] = useState<number | null>(null);
   const [cloneTrainNumber, setCloneTrainNumber] = useState('');
+  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [selectedPatternId, setSelectedPatternId] = useState<string>('');
+  const [departureTime, setDepartureTime] = useState('08:00:00');
 
   if (!work) {
     return <Box>Work not found</Box>;
@@ -104,6 +115,30 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
     }
   };
 
+  const handleGenerateTrain = () => {
+    if (!selectedPatternId) return;
+
+    const pattern = getTrainTypePattern(selectedPatternId);
+    if (!pattern) return;
+
+    const line = getLine(pattern.lineId);
+    if (!line) return;
+
+    const timetableRows = generateTimetableFromPattern(pattern, departureTime, line, stations);
+
+    const newTrain: Train = {
+      Id: uuidv4(),
+      TrainNumber: pattern.typeName,
+      Direction: 1,
+      TimetableRows: timetableRows,
+    };
+
+    addTrain(workGroupIndex, workIndex, newTrain);
+    setGenerateDialogOpen(false);
+    setSelectedPatternId('');
+    setDepartureTime('08:00:00');
+  };
+
   if (work.Trains.length === 0) {
     return (
       <Card>
@@ -125,14 +160,22 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
 
   return (
     <Box>
-      <Button
-        variant="contained"
-        startIcon={<AddIcon />}
-        onClick={() => handleOpenEditTrain()}
-        sx={{ mb: 2 }}
-      >
-        Add Train
-      </Button>
+      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenEditTrain()}
+        >
+          Add Train
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => setGenerateDialogOpen(true)}
+          disabled={trainTypePatterns.length === 0}
+        >
+          Generate from Pattern
+        </Button>
+      </Stack>
 
       <Stack spacing={2}>
         {work.Trains.map((train, trainIndex) => (
@@ -336,6 +379,58 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
             disabled={!cloneTrainNumber.trim()}
           >
             Clone
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Generate Train from Pattern Dialog */}
+      <Dialog open={generateDialogOpen} onClose={() => setGenerateDialogOpen(false)} fullWidth>
+        <DialogTitle>Generate Train from Pattern</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            <TextField
+              select
+              fullWidth
+              label="Train Type Pattern"
+              value={selectedPatternId}
+              onChange={(e) => setSelectedPatternId(e.target.value)}
+            >
+              {trainTypePatterns.map((pattern) => {
+                const line = getLine(pattern.lineId);
+                return (
+                  <MenuItem key={pattern.id} value={pattern.id}>
+                    {line?.name} - {pattern.typeName}
+                  </MenuItem>
+                );
+              })}
+            </TextField>
+
+            <TextField
+              fullWidth
+              label="Departure Time (HH:MM:SS)"
+              value={departureTime}
+              onChange={(e) => setDepartureTime(e.target.value)}
+              placeholder="08:00:00"
+            />
+
+            {selectedPatternId && (
+              <Box sx={{ p: 1, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
+                <Typography variant="caption" color="textSecondary">
+                  This will generate a new train with the pattern's schedule starting at the specified
+                  time.
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setGenerateDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleGenerateTrain}
+            variant="contained"
+            disabled={!selectedPatternId || !departureTime}
+          >
+            Generate
           </Button>
         </DialogActions>
       </Dialog>

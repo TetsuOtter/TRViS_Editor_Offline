@@ -7,6 +7,7 @@ import { ProjectSelector } from '../components/ProjectPanel/ProjectSelector';
 import { JsonExport } from '../components/ImportExport/JsonExport';
 import { StationMaster } from '../components/LineManager/StationMaster';
 import { LineEditor } from '../components/LineManager/LineEditor';
+import { TrainTypePatternEditor } from '../components/LineManager/TrainTypePatternEditor';
 
 function EditorPage() {
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
@@ -72,6 +73,7 @@ function EditorPage() {
                   <Tab label="Work Groups" />
                   <Tab label="Stations" />
                   <Tab label="Lines" />
+                  <Tab label="Train Types" />
                 </Tabs>
               </Box>
 
@@ -105,6 +107,8 @@ function EditorPage() {
                 {activeTab === 1 && <StationMaster />}
 
                 {activeTab === 2 && <LineEditor />}
+
+                {activeTab === 3 && <TrainTypePatternEditor />}
               </CardContent>
             </Card>
           </Stack>
