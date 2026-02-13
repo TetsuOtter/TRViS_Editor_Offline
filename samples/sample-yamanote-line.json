@@ -1,0 +1,152 @@
+[
+  {
+    "Id": "wg-01",
+    "Name": "山手線 (Yamanote Line)",
+    "Works": [
+      {
+        "Id": "work-01",
+        "Name": "平日 (Weekday)",
+        "AffectDate": "20240101",
+        "Remarks": "平日の山手線時刻表",
+        "Trains": [
+          {
+            "Id": "train-01",
+            "TrainNumber": "普通 10時方向",
+            "Direction": 1,
+            "MaxSpeed": 100,
+            "CarCount": 11,
+            "Destination": "渋谷駅",
+            "TimetableRows": [
+              {
+                "Id": "row-01",
+                "StationName": "東京",
+                "FullName": "東京駅",
+                "Location_m": 0,
+                "Departure": "08:00:00",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-02",
+                "StationName": "神田",
+                "FullName": "神田駅",
+                "Location_m": 1800,
+                "Arrive": "08:04:30",
+                "Departure": "08:05:00",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-03",
+                "StationName": "秋葉原",
+                "FullName": "秋葉原駅",
+                "Location_m": 3600,
+                "Arrive": "08:10:00",
+                "Departure": "08:10:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-04",
+                "StationName": "御茶ノ水",
+                "FullName": "御茶ノ水駅",
+                "Location_m": 5400,
+                "Arrive": "08:15:30",
+                "Departure": "08:16:00",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-05",
+                "StationName": "新宿",
+                "FullName": "新宿駅",
+                "Location_m": 10800,
+                "Arrive": "08:30:00",
+                "Departure": "08:31:00",
+                "TrackName": "3",
+                "IsPass": false
+              },
+              {
+                "Id": "row-06",
+                "StationName": "渋谷",
+                "FullName": "渋谷駅",
+                "Location_m": 14400,
+                "Arrive": "08:45:00",
+                "TrackName": "1",
+                "IsPass": false
+              }
+            ]
+          },
+          {
+            "Id": "train-02",
+            "TrainNumber": "普通 11時方向",
+            "Direction": 1,
+            "MaxSpeed": 100,
+            "CarCount": 11,
+            "Destination": "渋谷駅",
+            "TimetableRows": [
+              {
+                "Id": "row-07",
+                "StationName": "東京",
+                "FullName": "東京駅",
+                "Location_m": 0,
+                "Departure": "09:00:00",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-08",
+                "StationName": "神田",
+                "FullName": "神田駅",
+                "Location_m": 1800,
+                "Arrive": "09:04:30",
+                "Departure": "09:05:00",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-09",
+                "StationName": "秋葉原",
+                "FullName": "秋葉原駅",
+                "Location_m": 3600,
+                "Arrive": "09:10:00",
+                "Departure": "09:10:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-10",
+                "StationName": "御茶ノ水",
+                "FullName": "御茶ノ水駅",
+                "Location_m": 5400,
+                "Arrive": "09:15:30",
+                "Departure": "09:16:00",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-11",
+                "StationName": "新宿",
+                "FullName": "新宿駅",
+                "Location_m": 10800,
+                "Arrive": "09:30:00",
+                "Departure": "09:31:00",
+                "TrackName": "3",
+                "IsPass": false
+              },
+              {
+                "Id": "row-12",
+                "StationName": "渋谷",
+                "FullName": "渋谷駅",
+                "Location_m": 14400,
+                "Arrive": "09:45:00",
+                "TrackName": "1",
+                "IsPass": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,358 @@
+[
+  {
+    "Id": "wg-03",
+    "Name": "営団地下鉄丸ノ内線 (Tokyo Metro Marunouchi Line)",
+    "Works": [
+      {
+        "Id": "work-03",
+        "Name": "平日 (Weekday)",
+        "AffectDate": "20240115",
+        "Remarks": "丸ノ内線の平日時刻表 - 朝の時間帯",
+        "Trains": [
+          {
+            "Id": "train-05",
+            "TrainNumber": "M101",
+            "Direction": 1,
+            "MaxSpeed": 100,
+            "CarCount": 8,
+            "Destination": "和光市駅",
+            "TimetableRows": [
+              {
+                "Id": "row-25",
+                "StationName": "池袋",
+                "FullName": "池袋駅",
+                "Location_m": 0,
+                "Departure": "06:30:00",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-26",
+                "StationName": "新大塚",
+                "FullName": "新大塚駅",
+                "Location_m": 1200,
+                "Arrive": "06:33:00",
+                "Departure": "06:33:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-27",
+                "StationName": "茗荷谷",
+                "FullName": "茗荷谷駅",
+                "Location_m": 2400,
+                "Arrive": "06:36:00",
+                "Departure": "06:36:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-28",
+                "StationName": "後楽園",
+                "FullName": "後楽園駅",
+                "Location_m": 4200,
+                "Arrive": "06:42:00",
+                "Departure": "06:42:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-29",
+                "StationName": "本郷3丁目",
+                "FullName": "本郷3丁目駅",
+                "Location_m": 5400,
+                "Arrive": "06:45:00",
+                "Departure": "06:45:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-30",
+                "StationName": "東京",
+                "FullName": "東京駅",
+                "Location_m": 8000,
+                "Arrive": "06:52:00",
+                "Departure": "06:52:30",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-31",
+                "StationName": "銀座",
+                "FullName": "銀座駅",
+                "Location_m": 9500,
+                "Arrive": "06:55:00",
+                "Departure": "06:55:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-32",
+                "StationName": "霞が関",
+                "FullName": "霞が関駅",
+                "Location_m": 11000,
+                "Arrive": "06:58:00",
+                "Departure": "06:58:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-33",
+                "StationName": "国会議事堂前",
+                "FullName": "国会議事堂前駅",
+                "Location_m": 12000,
+                "Arrive": "07:00:00",
+                "Departure": "07:00:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-34",
+                "StationName": "赤坂見附",
+                "FullName": "赤坂見附駅",
+                "Location_m": 13500,
+                "Arrive": "07:03:00",
+                "Departure": "07:03:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-35",
+                "StationName": "四ツ谷",
+                "FullName": "四ツ谷駅",
+                "Location_m": 15000,
+                "Arrive": "07:06:00",
+                "Departure": "07:06:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-36",
+                "StationName": "新宿",
+                "FullName": "新宿駅",
+                "Location_m": 17000,
+                "Arrive": "07:11:00",
+                "Departure": "07:12:00",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-37",
+                "StationName": "西新宿",
+                "FullName": "西新宿駅",
+                "Location_m": 18000,
+                "Arrive": "07:14:00",
+                "Departure": "07:14:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-38",
+                "StationName": "中野坂上",
+                "FullName": "中野坂上駅",
+                "Location_m": 21000,
+                "Arrive": "07:20:00",
+                "Departure": "07:20:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-39",
+                "StationName": "中野",
+                "FullName": "中野駅",
+                "Location_m": 22500,
+                "Arrive": "07:22:00",
+                "Departure": "07:22:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-40",
+                "StationName": "和光市",
+                "FullName": "和光市駅",
+                "Location_m": 35000,
+                "Arrive": "07:50:00",
+                "TrackName": "1",
+                "IsPass": false
+              }
+            ]
+          },
+          {
+            "Id": "train-06",
+            "TrainNumber": "M102",
+            "Direction": 1,
+            "MaxSpeed": 100,
+            "CarCount": 8,
+            "Destination": "和光市駅",
+            "TimetableRows": [
+              {
+                "Id": "row-41",
+                "StationName": "池袋",
+                "FullName": "池袋駅",
+                "Location_m": 0,
+                "Departure": "06:45:00",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-42",
+                "StationName": "新大塚",
+                "FullName": "新大塚駅",
+                "Location_m": 1200,
+                "Arrive": "06:48:00",
+                "Departure": "06:48:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-43",
+                "StationName": "茗荷谷",
+                "FullName": "茗荷谷駅",
+                "Location_m": 2400,
+                "Arrive": "06:51:00",
+                "Departure": "06:51:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-44",
+                "StationName": "後楽園",
+                "FullName": "後楽園駅",
+                "Location_m": 4200,
+                "Arrive": "06:57:00",
+                "Departure": "06:57:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-45",
+                "StationName": "本郷3丁目",
+                "FullName": "本郷3丁目駅",
+                "Location_m": 5400,
+                "Arrive": "07:00:00",
+                "Departure": "07:00:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-46",
+                "StationName": "東京",
+                "FullName": "東京駅",
+                "Location_m": 8000,
+                "Arrive": "07:07:00",
+                "Departure": "07:07:30",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-47",
+                "StationName": "銀座",
+                "FullName": "銀座駅",
+                "Location_m": 9500,
+                "Arrive": "07:10:00",
+                "Departure": "07:10:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-48",
+                "StationName": "霞が関",
+                "FullName": "霞が関駅",
+                "Location_m": 11000,
+                "Arrive": "07:13:00",
+                "Departure": "07:13:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-49",
+                "StationName": "新宿",
+                "FullName": "新宿駅",
+                "Location_m": 17000,
+                "Arrive": "07:26:00",
+                "Departure": "07:27:00",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-50",
+                "StationName": "和光市",
+                "FullName": "和光市駅",
+                "Location_m": 35000,
+                "Arrive": "08:05:00",
+                "TrackName": "1",
+                "IsPass": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Id": "work-04",
+        "Name": "休日 (Holiday)",
+        "AffectDate": "20240113",
+        "Remarks": "丸ノ内線の休日時刻表",
+        "Trains": [
+          {
+            "Id": "train-07",
+            "TrainNumber": "M201",
+            "Direction": 1,
+            "MaxSpeed": 100,
+            "CarCount": 8,
+            "Destination": "和光市駅",
+            "TimetableRows": [
+              {
+                "Id": "row-51",
+                "StationName": "池袋",
+                "FullName": "池袋駅",
+                "Location_m": 0,
+                "Departure": "07:00:00",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-52",
+                "StationName": "新大塚",
+                "FullName": "新大塚駅",
+                "Location_m": 1200,
+                "Arrive": "07:03:00",
+                "Departure": "07:03:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-53",
+                "StationName": "茗荷谷",
+                "FullName": "茗荷谷駅",
+                "Location_m": 2400,
+                "Arrive": "07:06:00",
+                "Departure": "07:06:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-54",
+                "StationName": "新宿",
+                "FullName": "新宿駅",
+                "Location_m": 17000,
+                "Arrive": "07:21:00",
+                "Departure": "07:22:00",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-55",
+                "StationName": "和光市",
+                "FullName": "和光市駅",
+                "Location_m": 35000,
+                "Arrive": "08:00:00",
+                "TrackName": "1",
+                "IsPass": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

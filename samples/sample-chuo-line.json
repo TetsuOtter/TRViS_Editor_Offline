@@ -1,0 +1,152 @@
+[
+  {
+    "Id": "wg-02",
+    "Name": "中央線 (Chuo Line)",
+    "Works": [
+      {
+        "Id": "work-02",
+        "Name": "平日朝 (Weekday Morning)",
+        "AffectDate": "20240101",
+        "Remarks": "中央線の朝の時刻表（快速と普通）",
+        "Trains": [
+          {
+            "Id": "train-03",
+            "TrainNumber": "快速 高尾行",
+            "Direction": 1,
+            "MaxSpeed": 120,
+            "CarCount": 10,
+            "Destination": "高尾駅",
+            "TimetableRows": [
+              {
+                "Id": "row-13",
+                "StationName": "東京",
+                "FullName": "東京駅",
+                "Location_m": 0,
+                "Departure": "07:00:00",
+                "TrackName": "4",
+                "IsPass": false
+              },
+              {
+                "Id": "row-14",
+                "StationName": "有楽町",
+                "FullName": "有楽町駅",
+                "Location_m": 1500,
+                "Arrive": "07:03:00",
+                "Departure": "07:03:30",
+                "TrackName": "3",
+                "IsPass": false
+              },
+              {
+                "Id": "row-15",
+                "StationName": "中野",
+                "FullName": "中野駅",
+                "Location_m": 10000,
+                "Arrive": "07:20:00",
+                "Departure": "07:20:30",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-16",
+                "StationName": "八王子",
+                "FullName": "八王子駅",
+                "Location_m": 40000,
+                "Arrive": "07:50:00",
+                "Departure": "07:51:00",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-17",
+                "StationName": "高尾",
+                "FullName": "高尾駅",
+                "Location_m": 50000,
+                "Arrive": "08:10:00",
+                "TrackName": "1",
+                "IsPass": false
+              }
+            ]
+          },
+          {
+            "Id": "train-04",
+            "TrainNumber": "普通 高尾行",
+            "Direction": 1,
+            "MaxSpeed": 100,
+            "CarCount": 10,
+            "Destination": "高尾駅",
+            "TimetableRows": [
+              {
+                "Id": "row-18",
+                "StationName": "東京",
+                "FullName": "東京駅",
+                "Location_m": 0,
+                "Departure": "07:15:00",
+                "TrackName": "3",
+                "IsPass": false
+              },
+              {
+                "Id": "row-19",
+                "StationName": "有楽町",
+                "FullName": "有楽町駅",
+                "Location_m": 1500,
+                "Arrive": "07:18:00",
+                "Departure": "07:18:30",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-20",
+                "StationName": "新宿",
+                "FullName": "新宿駅",
+                "Location_m": 8000,
+                "Arrive": "07:35:00",
+                "Departure": "07:36:00",
+                "TrackName": "3",
+                "IsPass": false
+              },
+              {
+                "Id": "row-21",
+                "StationName": "中野",
+                "FullName": "中野駅",
+                "Location_m": 10000,
+                "Arrive": "07:42:00",
+                "Departure": "07:42:30",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-22",
+                "StationName": "荻窪",
+                "FullName": "荻窪駅",
+                "Location_m": 15000,
+                "Arrive": "07:55:00",
+                "Departure": "07:55:30",
+                "TrackName": "2",
+                "IsPass": false
+              },
+              {
+                "Id": "row-23",
+                "StationName": "八王子",
+                "FullName": "八王子駅",
+                "Location_m": 40000,
+                "Arrive": "08:30:00",
+                "Departure": "08:31:00",
+                "TrackName": "1",
+                "IsPass": false
+              },
+              {
+                "Id": "row-24",
+                "StationName": "高尾",
+                "FullName": "高尾駅",
+                "Location_m": 50000,
+                "Arrive": "08:50:00",
+                "TrackName": "1",
+                "IsPass": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
