@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
-import { Box, Typography, Card, CardContent, Stack, Grid } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Box, Typography, Card, CardContent, Stack, Grid, Tabs, Tab } from '@mui/material';
 import { useProjectStore } from '../store/projectStore';
 import { useDataStore } from '../store/dataStore';
 import { useEditorStore } from '../store/editorStore';
 import { ProjectSelector } from '../components/ProjectPanel/ProjectSelector';
 import { JsonExport } from '../components/ImportExport/JsonExport';
+import { StationMaster } from '../components/LineManager/StationMaster';
+import { LineEditor } from '../components/LineManager/LineEditor';
 
 function EditorPage() {
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
@@ -13,6 +15,8 @@ function EditorPage() {
   const workGroups = useDataStore((state) => state.workGroups);
   const syncWithProject = useDataStore((state) => state.syncWithProject);
   const syncEditorWithProject = useEditorStore((state) => state.syncWithProject);
+
+  const [activeTab, setActiveTab] = useState<number>(0);
 
   // Sync data when project changes
   useEffect(() => {
@@ -59,30 +63,50 @@ function EditorPage() {
             </Card>
 
             <Card>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs
+                  value={activeTab}
+                  onChange={(_, newValue) => setActiveTab(newValue)}
+                  aria-label="editor tabs"
+                >
+                  <Tab label="Work Groups" />
+                  <Tab label="Stations" />
+                  <Tab label="Lines" />
+                </Tabs>
+              </Box>
+
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Export
-                </Typography>
-                <JsonExport />
+                {activeTab === 0 && (
+                  <Stack spacing={2}>
+                    <Box>
+                      <Typography variant="h6" gutterBottom>
+                        Export
+                      </Typography>
+                      <JsonExport />
+                    </Box>
+
+                    {workGroups.length > 0 && (
+                      <Box>
+                        <Typography variant="h6" gutterBottom>
+                          WorkGroups ({workGroups.length})
+                        </Typography>
+                        <Stack spacing={1}>
+                          {workGroups.map((wg, i) => (
+                            <Typography key={i} variant="body2">
+                              {i + 1}. <strong>{wg.Name}</strong> ({wg.Works.length} works)
+                            </Typography>
+                          ))}
+                        </Stack>
+                      </Box>
+                    )}
+                  </Stack>
+                )}
+
+                {activeTab === 1 && <StationMaster />}
+
+                {activeTab === 2 && <LineEditor />}
               </CardContent>
             </Card>
-
-            {workGroups.length > 0 && (
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    WorkGroups ({workGroups.length})
-                  </Typography>
-                  <Stack spacing={1}>
-                    {workGroups.map((wg, i) => (
-                      <Typography key={i} variant="body2">
-                        {i + 1}. <strong>{wg.Name}</strong> ({wg.Works.length} works)
-                      </Typography>
-                    ))}
-                  </Stack>
-                </CardContent>
-              </Card>
-            )}
           </Stack>
         )}
       </Grid>
