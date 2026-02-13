@@ -1,4 +1,7 @@
-import { Box, Typography, Card, CardContent, Button, Stack } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button, Stack, Alert } from '@mui/material';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import { JsonImport } from '../components/ImportExport/JsonImport';
+import { AppLinkButton } from '../components/ImportExport/AppLinkButton';
 
 function SettingsPage() {
   const handleExportStorage = () => {
@@ -64,32 +67,56 @@ function SettingsPage() {
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              LocalStorage Management
+              Import JSON Timetable
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-              Export and import all your project data including projects, workgroups, stations,
-              lines, and train type patterns.
+              Import a TRViS-formatted JSON file to load timetable data into the active project.
             </Typography>
-            <Stack direction="row" spacing={2}>
-              <Button variant="contained" onClick={handleExportStorage}>
-                Export All Data
-              </Button>
-              <Button variant="outlined" onClick={handleImportStorage}>
-                Import Data
-              </Button>
-            </Stack>
+            <JsonImport />
           </CardContent>
         </Card>
 
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              AppLink (TBD)
+              AppLink for TRViS App
             </Typography>
-            <Typography variant="body2" color="textSecondary">
-              AppLink functionality will be implemented here. You can use AppLink to send your
-              timetable data to the TRViS app.
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+              Generate an AppLink that can be shared with the TRViS app to load your timetable
+              data directly.
             </Typography>
+            <AppLinkButton />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Full Data Backup
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+              Export and import all your project data including projects, workgroups, stations,
+              lines, and train type patterns. This backs up your entire LocalStorage.
+            </Typography>
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="contained"
+                startIcon={<CloudDownloadIcon />}
+                onClick={handleExportStorage}
+              >
+                Export All Data
+              </Button>
+              <Button variant="outlined" onClick={handleImportStorage}>
+                Import Backup
+              </Button>
+            </Stack>
+
+            <Alert severity="info" sx={{ mt: 2 }}>
+              <Typography variant="body2">
+                Use this to backup and restore all your data, including multiple projects and
+                their associated settings.
+              </Typography>
+            </Alert>
           </CardContent>
         </Card>
       </Stack>

@@ -1,5 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Box, AppBar, Toolbar, Drawer, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { Box, AppBar, Toolbar, Drawer, List, ListItem, ListItemText, Typography, Divider, IconButton, Tooltip } from '@mui/material';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useProjectStore } from './store/projectStore';
 import { useAutoSave } from './hooks/useAutoSave';
 import EditorPage from './pages/EditorPage';
@@ -8,6 +9,7 @@ import SettingsPage from './pages/SettingsPage';
 const drawerWidth = 280;
 
 function AppContent() {
+  const navigate = useNavigate();
   const projects = useProjectStore((state) => state.projects);
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
   const setActiveProject = useProjectStore((state) => state.setActiveProject);
@@ -23,6 +25,11 @@ function AppContent() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             TRViS Editor {activeProject ? `- ${activeProject.name}` : ''}
           </Typography>
+          <Tooltip title="Settings">
+            <IconButton color="inherit" onClick={() => navigate('/settings')}>
+              <SettingsIcon />
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
 
@@ -64,6 +71,23 @@ function AppContent() {
               </ListItem>
             ))
           )}
+        </List>
+
+        <Divider sx={{ my: 1 }} />
+
+        <List>
+          <ListItem
+            onClick={() => navigate('/settings')}
+            sx={{
+              cursor: 'pointer',
+              '&:hover': {
+                backgroundColor: 'action.hover',
+              },
+            }}
+          >
+            <SettingsIcon sx={{ mr: 1 }} />
+            <ListItemText primary="Settings" />
+          </ListItem>
         </List>
       </Drawer>
 
