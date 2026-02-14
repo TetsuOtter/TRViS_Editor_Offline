@@ -14,6 +14,8 @@ import {
   Typography,
   IconButton,
   Grid,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -30,6 +32,8 @@ import { Breadcrumbs } from '../components/Navigation/Breadcrumbs';
 import type { BreadcrumbItemWithSiblings } from '../components/Navigation/Breadcrumbs';
 import { StationDialog } from '../components/Dialogs/StationDialog';
 import { LineDialog } from '../components/Dialogs/LineDialog';
+import { FormField } from '../components/FormFields/TRViSFormFields';
+import { createDefaultTRViSConfiguration } from '../types/trvisconfiguration';
 import type { Work } from '../types/trvis';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -63,11 +67,19 @@ export function WorkListPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editTabIndex, setEditTabIndex] = useState(0);
   const [workName, setWorkName] = useState('');
   const [affectDate, setAffectDate] = useState<string | undefined>(undefined);
   const [remarks, setRemarks] = useState('');
+  const [affixContentType, setAffixContentType] = useState<number | undefined>(undefined);
+  const [affixContent, setAffixContent] = useState('');
+  const [hasETrainTimetable, setHasETrainTimetable] = useState(false);
+  const [eTrainTimetableContentType, setETrainTimetableContentType] = useState<number | undefined>(undefined);
+  const [eTrainTimetableContent, setETrainTimetableContent] = useState('');
   const [stationDialogOpen, setStationDialogOpen] = useState(false);
   const [lineDialogOpen, setLineDialogOpen] = useState(false);
+
+  const workConfig = createDefaultTRViSConfiguration().work;
 
   if (!workGroup) {
     return (
@@ -89,12 +101,23 @@ export function WorkListPage() {
         Name: workName,
         AffectDate: affectDate,
         Remarks: remarks,
+        AffixContentType: affixContentType,
+        AffixContent: affixContent || undefined,
+        HasETrainTimetable: hasETrainTimetable || undefined,
+        ETrainTimetableContentType: eTrainTimetableContentType,
+        ETrainTimetableContent: eTrainTimetableContent || undefined,
         Trains: [],
       };
       addWork(workGroupIndex, newWork);
       setWorkName('');
       setAffectDate(undefined);
       setRemarks('');
+      setAffixContentType(undefined);
+      setAffixContent('');
+      setHasETrainTimetable(false);
+      setETrainTimetableContentType(undefined);
+      setETrainTimetableContent('');
+      setEditTabIndex(0);
       setCreateDialogOpen(false);
     }
   };
@@ -107,11 +130,22 @@ export function WorkListPage() {
         Name: workName,
         AffectDate: affectDate,
         Remarks: remarks,
+        AffixContentType: affixContentType,
+        AffixContent: affixContent || undefined,
+        HasETrainTimetable: hasETrainTimetable || undefined,
+        ETrainTimetableContentType: eTrainTimetableContentType,
+        ETrainTimetableContent: eTrainTimetableContent || undefined,
       });
       setWorkName('');
       setAffectDate(undefined);
       setRemarks('');
+      setAffixContentType(undefined);
+      setAffixContent('');
+      setHasETrainTimetable(false);
+      setETrainTimetableContentType(undefined);
+      setETrainTimetableContent('');
       setEditingIndex(null);
+      setEditTabIndex(0);
       setEditDialogOpen(false);
     }
   };
@@ -122,6 +156,12 @@ export function WorkListPage() {
     setWorkName(work.Name);
     setAffectDate(work.AffectDate);
     setRemarks(work.Remarks || '');
+    setAffixContentType(work.AffixContentType);
+    setAffixContent(work.AffixContent || '');
+    setHasETrainTimetable(work.HasETrainTimetable || false);
+    setETrainTimetableContentType(work.ETrainTimetableContentType);
+    setETrainTimetableContent(work.ETrainTimetableContent || '');
+    setEditTabIndex(0);
     setEditDialogOpen(true);
   };
 
@@ -270,33 +310,83 @@ export function WorkListPage() {
       )}
 
       {/* Create Dialog */}
-      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} fullWidth>
+      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Create New Work</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 2 }}>
-            <TextField
-              autoFocus
-              fullWidth
-              label="Work Name"
-              value={workName}
-              onChange={(e) => setWorkName(e.target.value)}
-            />
-            <TextField
-              fullWidth
-              label="Affect Date (YYYYMMDD)"
-              value={affectDate}
-              onChange={(e) => setAffectDate(e.target.value)}
-              placeholder="20240101"
-            />
-            <TextField
-              fullWidth
-              label="Remarks (HTML supported)"
-              multiline
-              rows={3}
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-            />
-          </Stack>
+          <Box sx={{ mt: 2 }}>
+            <Tabs value={editTabIndex} onChange={(_, value) => setEditTabIndex(value)}>
+              <Tab label="Basic" />
+              <Tab label="Advanced" />
+            </Tabs>
+
+            <Box sx={{ mt: 2 }}>
+              {editTabIndex === 0 && (
+                <Stack spacing={2}>
+                  <FormField
+                    label="Work Name"
+                    value={workName}
+                    onChange={(value) => setWorkName(value)}
+                    config={workConfig.name || { enabled: true, required: true, description: '' }}
+                  />
+                  <FormField
+                    label="Affect Date"
+                    value={affectDate || ''}
+                    onChange={(value) => setAffectDate(value)}
+                    type="text"
+                    config={workConfig.affectDate || { enabled: true, required: false, description: '', format: 'YYYYMMDD' }}
+                    placeholder="20240101"
+                  />
+                  <FormField
+                    label="Remarks"
+                    value={remarks}
+                    onChange={(value) => setRemarks(value)}
+                    type="textarea"
+                    config={workConfig.remarks || { enabled: true, required: false, description: '' }}
+                  />
+                </Stack>
+              )}
+
+              {editTabIndex === 1 && (
+                <Stack spacing={2}>
+                  <FormField
+                    label="Affix Content Type"
+                    value={affixContentType || ''}
+                    onChange={(value) => setAffixContentType(value)}
+                    type="number"
+                    config={workConfig.affixContentType || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Affix Content"
+                    value={affixContent}
+                    onChange={(value) => setAffixContent(value)}
+                    type="textarea"
+                    config={workConfig.affixContent || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Has E-Train Timetable"
+                    value={hasETrainTimetable}
+                    onChange={(value) => setHasETrainTimetable(value)}
+                    type="boolean"
+                    config={workConfig.hasETrainTimetable || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="E-Train Timetable Content Type"
+                    value={eTrainTimetableContentType || ''}
+                    onChange={(value) => setETrainTimetableContentType(value)}
+                    type="number"
+                    config={workConfig.eTrainTimetableContentType || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="E-Train Timetable Content"
+                    value={eTrainTimetableContent}
+                    onChange={(value) => setETrainTimetableContent(value)}
+                    type="textarea"
+                    config={workConfig.eTrainTimetableContent || { enabled: true, required: false, description: '' }}
+                  />
+                </Stack>
+              )}
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
@@ -311,33 +401,83 @@ export function WorkListPage() {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth>
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Edit Work</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 2 }}>
-            <TextField
-              autoFocus
-              fullWidth
-              label="Work Name"
-              value={workName}
-              onChange={(e) => setWorkName(e.target.value)}
-            />
-            <TextField
-              fullWidth
-              label="Affect Date (YYYYMMDD)"
-              value={affectDate}
-              onChange={(e) => setAffectDate(e.target.value)}
-              placeholder="20240101"
-            />
-            <TextField
-              fullWidth
-              label="Remarks (HTML supported)"
-              multiline
-              rows={3}
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-            />
-          </Stack>
+          <Box sx={{ mt: 2 }}>
+            <Tabs value={editTabIndex} onChange={(_, value) => setEditTabIndex(value)}>
+              <Tab label="Basic" />
+              <Tab label="Advanced" />
+            </Tabs>
+
+            <Box sx={{ mt: 2 }}>
+              {editTabIndex === 0 && (
+                <Stack spacing={2}>
+                  <FormField
+                    label="Work Name"
+                    value={workName}
+                    onChange={(value) => setWorkName(value)}
+                    config={workConfig.name || { enabled: true, required: true, description: '' }}
+                  />
+                  <FormField
+                    label="Affect Date"
+                    value={affectDate || ''}
+                    onChange={(value) => setAffectDate(value)}
+                    type="text"
+                    config={workConfig.affectDate || { enabled: true, required: false, description: '', format: 'YYYYMMDD' }}
+                    placeholder="20240101"
+                  />
+                  <FormField
+                    label="Remarks"
+                    value={remarks}
+                    onChange={(value) => setRemarks(value)}
+                    type="textarea"
+                    config={workConfig.remarks || { enabled: true, required: false, description: '' }}
+                  />
+                </Stack>
+              )}
+
+              {editTabIndex === 1 && (
+                <Stack spacing={2}>
+                  <FormField
+                    label="Affix Content Type"
+                    value={affixContentType || ''}
+                    onChange={(value) => setAffixContentType(value)}
+                    type="number"
+                    config={workConfig.affixContentType || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Affix Content"
+                    value={affixContent}
+                    onChange={(value) => setAffixContent(value)}
+                    type="textarea"
+                    config={workConfig.affixContent || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Has E-Train Timetable"
+                    value={hasETrainTimetable}
+                    onChange={(value) => setHasETrainTimetable(value)}
+                    type="boolean"
+                    config={workConfig.hasETrainTimetable || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="E-Train Timetable Content Type"
+                    value={eTrainTimetableContentType || ''}
+                    onChange={(value) => setETrainTimetableContentType(value)}
+                    type="number"
+                    config={workConfig.eTrainTimetableContentType || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="E-Train Timetable Content"
+                    value={eTrainTimetableContent}
+                    onChange={(value) => setETrainTimetableContent(value)}
+                    type="textarea"
+                    config={workConfig.eTrainTimetableContent || { enabled: true, required: false, description: '' }}
+                  />
+                </Stack>
+              )}
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
