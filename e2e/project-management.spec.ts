@@ -13,7 +13,7 @@ test.describe('Project Management', () => {
 
     const main = page.locator('main')
 
-    // Should show "Create Your First Project" button when no projects exist
+    // Should show project selector when no projects exist
     await expect(main.getByRole('button', { name: 'Create Your First Project' })).toBeVisible()
 
     // Create new project using the main "New Project" button
@@ -25,8 +25,11 @@ test.describe('Project Management', () => {
     // Save project
     await page.getByRole('button', { name: 'Create' }).click()
 
-    // Dialog should close and project should be visible
-    await expect(main.getByText('E2E Test Project').first()).toBeVisible()
+    // Should redirect to WorkGroups page
+    await page.waitForURL(/\/project\/.*\/workgroups/)
+    
+    // Verify we're on the WorkGroups page
+    await expect(main.getByRole('heading', { name: 'WorkGroups' })).toBeVisible()
   })
 
   test('should switch between projects', async ({ page }) => {
@@ -39,20 +42,26 @@ test.describe('Project Management', () => {
     await page.getByLabel('Project Name').fill('Project 1')
     await page.getByRole('button', { name: 'Create' }).click()
 
+    // Should redirect, go back to project list
+    await page.goto('/')
+
     // Create second project
     await main.getByRole('button', { name: 'New Project' }).click()
     await page.getByLabel('Project Name').fill('Project 2')
     await page.getByRole('button', { name: 'Create' }).click()
 
-    // Both projects should be visible in the main project list
+    // Should redirect, go back to project list
+    await page.goto('/')
+
+    // Both projects should be visible in the project list
     await expect(main.getByText('Project 1').first()).toBeVisible()
     await expect(main.getByText('Project 2').first()).toBeVisible()
 
-    // Click on first project to select it (use list item text)
+    // Click on first project to select it (use list item)
     await main.locator('li').filter({ hasText: 'Project 1' }).click()
 
-    // After selecting Project 1, the heading should show Project 1
-    await expect(main.locator('h6').filter({ hasText: /^Project 1$/ })).toBeVisible()
+    // Should redirect to WorkGroups page for Project 1
+    await page.waitForURL(/\/project\/.*\/workgroups/)
   })
 
   test('should delete a project', async ({ page }) => {
@@ -64,6 +73,9 @@ test.describe('Project Management', () => {
     await main.getByRole('button', { name: 'New Project' }).click()
     await page.getByLabel('Project Name').fill('Delete Test Project')
     await page.getByRole('button', { name: 'Create' }).click()
+
+    // Go back to project list
+    await page.goto('/')
 
     // Delete project using delete icon (MUI Tooltip sets aria-label)
     await main.getByRole('button', { name: 'Delete project' }).click()
@@ -84,6 +96,9 @@ test.describe('Project Management', () => {
     await main.getByRole('button', { name: 'New Project' }).click()
     await page.getByLabel('Project Name').fill('Persistence Test')
     await page.getByRole('button', { name: 'Create' }).click()
+
+    // Go back to project list
+    await page.goto('/')
 
     // Verify project exists
     await expect(main.getByText('Persistence Test').first()).toBeVisible()

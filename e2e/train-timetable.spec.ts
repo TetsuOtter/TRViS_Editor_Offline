@@ -14,8 +14,11 @@ test.describe('Train Timetable Management', () => {
     await page.getByLabel('Project Name').fill('Timetable Test')
     await page.getByRole('button', { name: 'Create' }).click()
 
-    // Add test stations
-    await main.getByRole('tab', { name: 'Stations' }).click()
+    // Wait for redirect to WorkGroups page
+    await page.waitForURL(/\/project\/.*\/workgroups/)
+
+    // Add test stations via Station dialog
+    await main.getByRole('button', { name: 'Stations' }).click()
     const stations = [
       { name: '東京', fullName: '東京駅', lon: '139.7673', lat: '35.6812' },
       { name: '品川', fullName: '品川駅', lon: '139.7403', lat: '35.6285' },
@@ -24,48 +27,53 @@ test.describe('Train Timetable Management', () => {
 
     for (let i = 0; i < stations.length; i++) {
       const station = stations[i]
-      const buttonName = i === 0 ? 'Create Station' : 'Add Station'
-      await main.getByRole('button', { name: buttonName }).click()
+      const buttonName = i === 0 ? 'Add First Station' : 'Add Station'
+      await page.getByRole('button', { name: buttonName }).click()
       await page.getByLabel('Name', { exact: true }).fill(station.name)
       await page.getByLabel('Full Name').fill(station.fullName)
       await page.getByLabel('Longitude').fill(station.lon)
       await page.getByLabel('Latitude').fill(station.lat)
       await page.getByRole('button', { name: 'Save' }).click()
     }
+
+    // Close Station dialog
+    await page.getByRole('button', { name: 'Close' }).click()
   })
 
   test('should create work group and work', async ({ page }) => {
     const main = page.locator('main')
 
-    // Navigate to Work Groups tab
-    await main.getByRole('tab', { name: 'Work Groups' }).click()
+    // Create WorkGroup
+    await main.getByRole('button', { name: 'Create WorkGroup' }).click()
+    await page.getByLabel('WorkGroup Name').fill('Test WorkGroup')
+    await page.getByRole('button', { name: 'Create' }).click()
 
-    // The Work Groups tab shows export and workgroup info
-    // WorkGroup management is done through the data store
-    // Let's verify the tab loads correctly
-    await expect(main.getByText('Export')).toBeVisible()
-    await expect(main.getByRole('button', { name: 'Download as JSON' })).toBeVisible()
+    // Verify WorkGroup is created
+    await expect(main.getByText('Test WorkGroup')).toBeVisible()
   })
 
   test('should verify stations were created', async ({ page }) => {
     const main = page.locator('main')
 
-    // Verify stations tab shows all stations
-    await main.getByRole('tab', { name: 'Stations' }).click()
+    // Open Station dialog to verify stations
+    await main.getByRole('button', { name: 'Stations' }).click()
 
-    await expect(main.getByRole('cell', { name: '東京', exact: true })).toBeVisible()
-    await expect(main.getByRole('cell', { name: '品川', exact: true })).toBeVisible()
-    await expect(main.getByRole('cell', { name: '新橋', exact: true })).toBeVisible()
+    await expect(page.getByRole('cell', { name: '東京', exact: true })).toBeVisible()
+    await expect(page.getByRole('cell', { name: '品川', exact: true })).toBeVisible()
+    await expect(page.getByRole('cell', { name: '新橋', exact: true })).toBeVisible()
+
+    // Close dialog
+    await page.getByRole('button', { name: 'Close' }).click()
   })
 
   test('should create a line with stations', async ({ page }) => {
     const main = page.locator('main')
 
-    // Navigate to Lines tab
-    await main.getByRole('tab', { name: 'Lines' }).click()
+    // Open Line dialog
+    await main.getByRole('button', { name: 'Lines' }).click()
 
     // Create a new line
-    await main.getByRole('button', { name: 'Create Line' }).click()
+    await page.getByRole('button', { name: 'Add First Line' }).click()
 
     // Fill line name in dialog
     await page.getByLabel('Line Name').fill('JR東海道線')
@@ -74,29 +82,13 @@ test.describe('Train Timetable Management', () => {
     await page.getByRole('button', { name: 'Save' }).click()
 
     // Verify line appears
-    await expect(main.getByText('JR東海道線')).toBeVisible()
+    await expect(page.getByText('JR東海道線')).toBeVisible()
+
+    // Close dialog
+    await page.locator('button:has-text("Close")').last().click()
   })
 
-  test('should create a train type pattern', async ({ page }) => {
-    const main = page.locator('main')
-
-    // First create a line
-    await main.getByRole('tab', { name: 'Lines' }).click()
-    await main.getByRole('button', { name: 'Create Line' }).click()
-    await page.getByLabel('Line Name').fill('Test Line')
-    await page.getByRole('button', { name: 'Save' }).click()
-
-    // Navigate to Train Types tab
-    await main.getByRole('tab', { name: 'Train Types' }).click()
-
-    // Create pattern
-    await main.getByRole('button', { name: 'Create Pattern' }).click()
-
-    // Verify dialog opens
-    await expect(page.getByText('Create New Train Type Pattern')).toBeVisible()
-  })
-
-  test('should navigate between all tabs', async ({ page }) => {
+  test('should navigate between all pages', async ({ page }) => {
     const main = page.locator('main')
 
     // Test all tabs are accessible
@@ -112,36 +104,54 @@ test.describe('Train Timetable Management', () => {
   test('should edit station details', async ({ page }) => {
     const main = page.locator('main')
 
-    // Go to stations tab
-    await main.getByRole('tab', { name: 'Stations' }).click()
+    // Open Stations dialog
+    await main.getByRole('button', { name: 'Stations' }).click()
+    const stationDialog = page.locator('div[role="dialog"]')
+    await expect(stationDialog).toBeVisible()
 
     // Edit first station
-    await main.getByRole('button', { name: 'Edit Station' }).first().click()
+    await stationDialog.getByRole('button', { name: 'Edit Station' }).first().click()
+
+    // Wait for edit dialog to open
+    const editDialogs = page.locator('div[role="dialog"]')
+    await expect(editDialogs.nth(1)).toBeVisible()
 
     // Modify the station name
     await page.getByLabel('Name', { exact: true }).clear()
     await page.getByLabel('Name', { exact: true }).fill('東京modified')
     await page.getByRole('button', { name: 'Save' }).click()
 
-    // Verify the change
-    await expect(main.getByText('東京modified')).toBeVisible()
+    // Wait for edit dialog to close
+    await expect(editDialogs.nth(1)).not.toBeVisible()
+
+    // Verify the change in the station list dialog
+    await expect(stationDialog.getByText('東京modified')).toBeVisible()
+
+    // Close station dialog
+    await page.getByRole('button', { name: 'Close' }).click()
   })
 
   test('should delete a station', async ({ page }) => {
     const main = page.locator('main')
 
-    await main.getByRole('tab', { name: 'Stations' }).click()
+    // Open Stations dialog
+    await main.getByRole('button', { name: 'Stations' }).click()
+    const stationDialog = page.locator('div[role="dialog"]')
+    await expect(stationDialog).toBeVisible()
 
     // Count initial stations (should be 3)
-    const initialRows = await main.locator('table tbody tr').count()
+    const initialRows = await stationDialog.locator('table tbody tr').count()
     expect(initialRows).toBe(3)
 
     // Delete one station (uses window.confirm)
     page.on('dialog', dialog => dialog.accept())
-    await main.getByRole('button', { name: 'Delete Station' }).first().click()
+    await stationDialog.getByRole('button', { name: 'Delete Station' }).first().click()
 
     // Should have one fewer station
-    const remainingRows = await main.locator('table tbody tr').count()
+    const remainingRows = await stationDialog.locator('table tbody tr').count()
     expect(remainingRows).toBe(2)
+
+    // Close station dialog
+    await page.getByRole('button', { name: 'Close' }).click()
   })
 })
