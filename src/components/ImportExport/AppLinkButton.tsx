@@ -34,7 +34,6 @@ export function AppLinkButton() {
       component="a"
       href={appLink}
       disabled={!activeProjectData || workGroups.length === 0}
-      fullWidth
       sx={{ textTransform: 'none' }}
     >
       Open Directly

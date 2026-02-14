@@ -157,16 +157,15 @@ export function WorkGroupListPage() {
             Open In TRViS App
           </Typography>
           <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            Generate an AppLink that can be shared with the TRViS app to load your timetable
-            data directly.
+            Choose one of the following methods to open your data in the TRViS app.
           </Typography>
-          <Stack direction="row" spacing={2}>
+          <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-start' }}>
             <AppLinkButton />
             <Button
               variant="outlined"
               startIcon={<CloudDownloadIcon />}
               onClick={handleDownloadJSON}
-              sx={{ textTransform: 'none', flex: 1 }}
+              sx={{ textTransform: 'none' }}
             >
               Download as JSON
             </Button>
