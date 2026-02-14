@@ -12,6 +12,10 @@ import { useTheme } from './contexts/ThemeContext';
 import EditorPage from './pages/EditorPage';
 import SettingsPage from './pages/SettingsPage';
 import ThirdPartyLicensesPage from './pages/ThirdPartyLicensesPage';
+import { WorkGroupListPage } from './pages/WorkGroupListPage';
+import { WorkListPage } from './pages/WorkListPage';
+import { TrainListPage } from './pages/TrainListPage';
+import { TrainDetailPage } from './pages/TrainDetailPage';
 
 const drawerWidth = 280;
 
@@ -175,6 +179,10 @@ function AppContent() {
       >
         <Routes>
           <Route path="/" element={<EditorPage />} />
+          <Route path="/project/:projectId/workgroups" element={<WorkGroupListPage />} />
+          <Route path="/project/:projectId/workgroup/:workGroupId/works" element={<WorkListPage />} />
+          <Route path="/project/:projectId/workgroup/:workGroupId/work/:workId/trains" element={<TrainListPage />} />
+          <Route path="/project/:projectId/workgroup/:workGroupId/work/:workId/train/:trainId" element={<TrainDetailPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/licenses" element={<ThirdPartyLicensesPage />} />
         </Routes>
