@@ -556,6 +556,197 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       expect(savedTrain?.TimetableRows[1].Departure).toBeUndefined();
     });
   });
+
+  describe('Advanced Tab Properties - Complete Coverage', () => {
+    it('should persist all Advanced TimetableRow properties', () => {
+      const advancedRow: TimetableRow = {
+        Id: uuidv4(),
+        StationName: 'Advanced Station',
+        Location_m: 1000,
+        // Advanced tab properties
+        Longitude_deg: 139.7673,
+        Latitude_deg: 35.6762,
+        OnStationDetectRadius_m: 500,
+        IsPass: false,
+        IsLastStop: true,
+        IsOperationOnlyStop: false,
+        HasBracket: true,
+        RunInLimit: 100,
+        RunOutLimit: 200,
+        MarkerColor: 'FF0000',
+        MarkerText: 'Advanced',
+        RecordType: 1,
+        WorkType: 2,
+        Remarks: 'Advanced test remarks',
+      };
+
+      const workGroup = createTestWorkGroup();
+      const work = createTestWork();
+      const train = createTestTrain([advancedRow]);
+
+      work.Trains.push(train);
+      workGroup.Works.push(work);
+      useDataStore.getState().addWorkGroup(workGroup);
+
+      const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
+      const savedRow = savedTrain?.TimetableRows[0];
+
+      expect(savedRow).toBeDefined();
+      expect(savedRow?.Longitude_deg).toBe(139.7673);
+      expect(savedRow?.Latitude_deg).toBe(35.6762);
+      expect(savedRow?.OnStationDetectRadius_m).toBe(500);
+      expect(savedRow?.IsPass).toBe(false);
+      expect(savedRow?.IsLastStop).toBe(true);
+      expect(savedRow?.IsOperationOnlyStop).toBe(false);
+      expect(savedRow?.HasBracket).toBe(true);
+      expect(savedRow?.RunInLimit).toBe(100);
+      expect(savedRow?.RunOutLimit).toBe(200);
+      expect(savedRow?.MarkerColor).toBe('FF0000');
+      expect(savedRow?.MarkerText).toBe('Advanced');
+      expect(savedRow?.RecordType).toBe(1);
+      expect(savedRow?.WorkType).toBe(2);
+      expect(savedRow?.Remarks).toBe('Advanced test remarks');
+    });
+
+    it('should persist all Advanced Train properties', () => {
+      const advancedTrain: Train = {
+        Id: uuidv4(),
+        TrainNumber: 'ADV001',
+        Direction: 1,
+        // Basic properties
+        MaxSpeed: '100',
+        CarCount: 8,
+        Destination: 'Tokyo',
+        // Advanced properties
+        SpeedType: 'Limited Express',
+        NominalTractiveCapacity: '150kN',
+        WorkType: 10,
+        DayCount: 365,
+        IsRideOnMoving: true,
+        Color: '0088FF',
+        BeginRemarks: 'Beginning remarks',
+        AfterRemarks: 'After remarks',
+        Remarks: 'General remarks',
+        TrainInfo: 'Train information',
+        BeforeDeparture: '09:55:00',
+        AfterArrive: '17:05:00',
+        NextTrainId: 'NEXT001',
+        TimetableRows: [],
+      };
+
+      const workGroup = createTestWorkGroup();
+      const work = createTestWork();
+      work.Trains.push(advancedTrain);
+      workGroup.Works.push(work);
+      useDataStore.getState().addWorkGroup(workGroup);
+
+      const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
+
+      expect(savedTrain).toBeDefined();
+      expect(savedTrain?.SpeedType).toBe('Limited Express');
+      expect(savedTrain?.NominalTractiveCapacity).toBe('150kN');
+      expect(savedTrain?.WorkType).toBe(10);
+      expect(savedTrain?.DayCount).toBe(365);
+      expect(savedTrain?.IsRideOnMoving).toBe(true);
+      expect(savedTrain?.Color).toBe('0088FF');
+      expect(savedTrain?.BeginRemarks).toBe('Beginning remarks');
+      expect(savedTrain?.AfterRemarks).toBe('After remarks');
+      expect(savedTrain?.Remarks).toBe('General remarks');
+      expect(savedTrain?.TrainInfo).toBe('Train information');
+      expect(savedTrain?.BeforeDeparture).toBe('09:55:00');
+      expect(savedTrain?.AfterArrive).toBe('17:05:00');
+      expect(savedTrain?.NextTrainId).toBe('NEXT001');
+    });
+
+    it('should persist all Advanced Work properties', () => {
+      const advancedWork: Work = {
+        Id: uuidv4(),
+        Name: 'Advanced Work',
+        // Basic properties
+        AffectDate: '20240615',
+        Remarks: 'Work remarks',
+        // Advanced properties
+        AffixContentType: 1,
+        AffixContent: 'Affix content data',
+        HasETrainTimetable: true,
+        ETrainTimetableContentType: 2,
+        ETrainTimetableContent: 'E-Train timetable data',
+        Trains: [],
+      };
+
+      const workGroup = createTestWorkGroup();
+      workGroup.Works.push(advancedWork);
+      useDataStore.getState().addWorkGroup(workGroup);
+
+      const savedWork = useDataStore.getState().workGroups[0].Works[0];
+
+      expect(savedWork).toBeDefined();
+      expect(savedWork?.AffixContentType).toBe(1);
+      expect(savedWork?.AffixContent).toBe('Affix content data');
+      expect(savedWork?.HasETrainTimetable).toBe(true);
+      expect(savedWork?.ETrainTimetableContentType).toBe(2);
+      expect(savedWork?.ETrainTimetableContent).toBe('E-Train timetable data');
+    });
+
+    it('should persist updates to all Advanced properties', () => {
+      const workGroup = createTestWorkGroup();
+      const work = createTestWork();
+      const row = createTestTimetableRow();
+      const train = createTestTrain([row]);
+
+      work.Trains.push(train);
+      workGroup.Works.push(work);
+      useDataStore.getState().addWorkGroup(workGroup);
+
+      // Update Advanced TimetableRow properties
+      const updatedRow: TimetableRow = {
+        ...row,
+        Longitude_deg: 140.0,
+        Latitude_deg: 36.0,
+        MarkerColor: '00FF00',
+        IsLastStop: true,
+      };
+      useDataStore.getState().updateTimetableRow(0, 0, 0, 0, updatedRow);
+
+      const savedRow = useDataStore.getState().getTrain(0, 0, 0)?.TimetableRows[0];
+      expect(savedRow?.Longitude_deg).toBe(140.0);
+      expect(savedRow?.Latitude_deg).toBe(36.0);
+      expect(savedRow?.MarkerColor).toBe('00FF00');
+      expect(savedRow?.IsLastStop).toBe(true);
+    });
+
+    it('should handle mixed Basic and Advanced properties update', () => {
+      const workGroup = createTestWorkGroup();
+      const work: Work = {
+        Id: uuidv4(),
+        Name: 'Original Name',
+        AffectDate: '20240101',
+        Trains: [],
+      };
+      workGroup.Works.push(work);
+      useDataStore.getState().addWorkGroup(workGroup);
+
+      // Update both basic and advanced properties
+      const updatedWork: Work = {
+        ...work,
+        Name: 'Updated Name',
+        AffectDate: '20240615',
+        AffixContentType: 5,
+        AffixContent: 'New content',
+        HasETrainTimetable: true,
+        ETrainTimetableContentType: 3,
+      };
+      useDataStore.getState().updateWork(0, 0, updatedWork);
+
+      const savedWork = useDataStore.getState().workGroups[0].Works[0];
+      expect(savedWork?.Name).toBe('Updated Name');
+      expect(savedWork?.AffectDate).toBe('20240615');
+      expect(savedWork?.AffixContentType).toBe(5);
+      expect(savedWork?.AffixContent).toBe('New content');
+      expect(savedWork?.HasETrainTimetable).toBe(true);
+      expect(savedWork?.ETrainTimetableContentType).toBe(3);
+    });
+  });
 });
 
 // Helper functions
@@ -582,5 +773,13 @@ function createTestTrain(rows: TimetableRow[]): Train {
     TrainNumber: 'Test Train',
     Direction: 1,
     TimetableRows: rows,
+  };
+}
+
+function createTestTimetableRow(): TimetableRow {
+  return {
+    Id: uuidv4(),
+    StationName: 'Test Station',
+    Location_m: 100,
   };
 }
