@@ -747,6 +747,194 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       expect(savedWork?.ETrainTimetableContentType).toBe(3);
     });
   });
+
+  describe('Train Edit UI Coverage - All Properties', () => {
+    it('should persist Train NominalTractiveCapacity property', () => {
+      const train: Train = {
+        Id: uuidv4(),
+        TrainNumber: 'TestTrain',
+        Direction: 1,
+        NominalTractiveCapacity: '150kN',
+        TimetableRows: [],
+      };
+
+      const workGroup = createTestWorkGroup();
+      const work = createTestWork();
+      work.Trains.push(train);
+      workGroup.Works.push(work);
+      useDataStore.getState().addWorkGroup(workGroup);
+
+      const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
+      expect(savedTrain?.NominalTractiveCapacity).toBe('150kN');
+    });
+
+    it('should update Train NominalTractiveCapacity through UI', () => {
+      const train: Train = {
+        Id: uuidv4(),
+        TrainNumber: 'TestTrain',
+        Direction: 1,
+        NominalTractiveCapacity: 'Original',
+        TimetableRows: [],
+      };
+
+      const workGroup = createTestWorkGroup();
+      const work = createTestWork();
+      work.Trains.push(train);
+      workGroup.Works.push(work);
+      useDataStore.getState().addWorkGroup(workGroup);
+
+      // Simulate UI update
+      const updatedTrain: Train = {
+        ...train,
+        NominalTractiveCapacity: '200kN',
+      };
+      useDataStore.getState().updateTrain(0, 0, 0, updatedTrain);
+
+      const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
+      expect(savedTrain?.NominalTractiveCapacity).toBe('200kN');
+    });
+
+    it('should persist all Train Basic and Advanced properties together', () => {
+      const completeTrain: Train = {
+        Id: uuidv4(),
+        TrainNumber: 'Complete001',
+        Direction: 1,
+        MaxSpeed: '120',
+        CarCount: 10,
+        Destination: 'MainStation',
+        Remarks: 'Regular service',
+        SpeedType: 'Express',
+        NominalTractiveCapacity: '180kN',
+        WorkType: 5,
+        DayCount: 365,
+        IsRideOnMoving: true,
+        Color: 'FF5500',
+        BeginRemarks: 'Start remarks',
+        AfterRemarks: 'End remarks',
+        TrainInfo: 'Complete info',
+        BeforeDeparture: '08:55:00',
+        AfterArrive: '17:10:00',
+        NextTrainId: 'NEXT002',
+        TimetableRows: [],
+      };
+
+      const workGroup = createTestWorkGroup();
+      const work = createTestWork();
+      work.Trains.push(completeTrain);
+      workGroup.Works.push(work);
+      useDataStore.getState().addWorkGroup(workGroup);
+
+      const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
+
+      // Basic properties
+      expect(savedTrain?.TrainNumber).toBe('Complete001');
+      expect(savedTrain?.Direction).toBe(1);
+      expect(savedTrain?.MaxSpeed).toBe('120');
+      expect(savedTrain?.CarCount).toBe(10);
+      expect(savedTrain?.Destination).toBe('MainStation');
+      expect(savedTrain?.Remarks).toBe('Regular service');
+
+      // Advanced properties
+      expect(savedTrain?.SpeedType).toBe('Express');
+      expect(savedTrain?.NominalTractiveCapacity).toBe('180kN');
+      expect(savedTrain?.WorkType).toBe(5);
+      expect(savedTrain?.DayCount).toBe(365);
+      expect(savedTrain?.IsRideOnMoving).toBe(true);
+      expect(savedTrain?.Color).toBe('FF5500');
+      expect(savedTrain?.BeginRemarks).toBe('Start remarks');
+      expect(savedTrain?.AfterRemarks).toBe('End remarks');
+      expect(savedTrain?.TrainInfo).toBe('Complete info');
+      expect(savedTrain?.BeforeDeparture).toBe('08:55:00');
+      expect(savedTrain?.AfterArrive).toBe('17:10:00');
+      expect(savedTrain?.NextTrainId).toBe('NEXT002');
+    });
+
+    it('should update multiple Advanced properties simultaneously', () => {
+      const train: Train = {
+        Id: uuidv4(),
+        TrainNumber: 'UpdateTest',
+        Direction: 1,
+        TimetableRows: [],
+      };
+
+      const workGroup = createTestWorkGroup();
+      const work = createTestWork();
+      work.Trains.push(train);
+      workGroup.Works.push(work);
+      useDataStore.getState().addWorkGroup(workGroup);
+
+      // Simulate editing multiple Advanced properties via UI
+      const updatedTrain: Train = {
+        ...train,
+        SpeedType: 'Limited',
+        NominalTractiveCapacity: '160kN',
+        WorkType: 7,
+        DayCount: 200,
+        IsRideOnMoving: false,
+        Color: '00FF00',
+      };
+      useDataStore.getState().updateTrain(0, 0, 0, updatedTrain);
+
+      const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
+      expect(savedTrain?.SpeedType).toBe('Limited');
+      expect(savedTrain?.NominalTractiveCapacity).toBe('160kN');
+      expect(savedTrain?.WorkType).toBe(7);
+      expect(savedTrain?.DayCount).toBe(200);
+      expect(savedTrain?.IsRideOnMoving).toBe(false);
+      expect(savedTrain?.Color).toBe('00FF00');
+    });
+
+    it('should persist all Remark fields independently', () => {
+      const train: Train = {
+        Id: uuidv4(),
+        TrainNumber: 'RemarksTest',
+        Direction: 1,
+        Remarks: 'Main remark',
+        BeginRemarks: 'Begin remark',
+        AfterRemarks: 'After remark',
+        TrainInfo: 'Train information',
+        TimetableRows: [],
+      };
+
+      const workGroup = createTestWorkGroup();
+      const work = createTestWork();
+      work.Trains.push(train);
+      workGroup.Works.push(work);
+      useDataStore.getState().addWorkGroup(workGroup);
+
+      const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
+      expect(savedTrain?.Remarks).toBe('Main remark');
+      expect(savedTrain?.BeginRemarks).toBe('Begin remark');
+      expect(savedTrain?.AfterRemarks).toBe('After remark');
+      expect(savedTrain?.TrainInfo).toBe('Train information');
+    });
+
+    it('should handle undefined Advanced properties gracefully', () => {
+      const train: Train = {
+        Id: uuidv4(),
+        TrainNumber: 'PartialTrain',
+        Direction: 1,
+        MaxSpeed: '100',
+        // Some Advanced properties undefined
+        SpeedType: undefined,
+        DayCount: undefined,
+        Color: 'FF0000',
+        TimetableRows: [],
+      };
+
+      const workGroup = createTestWorkGroup();
+      const work = createTestWork();
+      work.Trains.push(train);
+      workGroup.Works.push(work);
+      useDataStore.getState().addWorkGroup(workGroup);
+
+      const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
+      expect(savedTrain?.MaxSpeed).toBe('100');
+      expect(savedTrain?.SpeedType).toBeUndefined();
+      expect(savedTrain?.DayCount).toBeUndefined();
+      expect(savedTrain?.Color).toBe('FF0000');
+    });
+  });
 });
 
 // Helper functions

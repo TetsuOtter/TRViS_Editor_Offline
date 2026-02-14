@@ -8,12 +8,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Stack,
   Typography,
-  FormControlLabel,
-  Switch,
   Chip,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
@@ -29,6 +28,8 @@ import type { BreadcrumbItemWithSiblings } from '../components/Navigation/Breadc
 import { TimetableGrid } from '../components/TimetableEditor/TimetableGrid';
 import { StationDialog } from '../components/Dialogs/StationDialog';
 import { LineDialog } from '../components/Dialogs/LineDialog';
+import { FormField } from '../components/FormFields/TRViSFormFields';
+import { createDefaultTRViSConfiguration } from '../types/trvisconfiguration';
 
 export function TrainDetailPage() {
   const navigate = useNavigate();
@@ -69,16 +70,32 @@ export function TrainDetailPage() {
   const train = work?.Trains[trainIndex ?? -1];
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editTabIndex, setEditTabIndex] = useState(0);
   const [trainNumber, setTrainNumber] = useState('');
   const [direction, setDirection] = useState<number>(1);
   const [maxSpeed, setMaxSpeed] = useState<string>('');
   const [carCount, setCarCount] = useState<number | ''>('');
   const [destination, setDestination] = useState('');
   const [remarks, setRemarks] = useState('');
+  // Advanced properties
+  const [speedType, setSpeedType] = useState<string>('');
+  const [nominalTractiveCapacity, setNominalTractiveCapacity] = useState<string>('');
+  const [workType, setWorkType] = useState<number | ''>('');
+  const [dayCount, setDayCount] = useState<number | ''>('');
+  const [isRideOnMoving, setIsRideOnMoving] = useState(false);
+  const [color, setColor] = useState<string>('');
+  const [beginRemarks, setBeginRemarks] = useState<string>('');
+  const [afterRemarks, setAfterRemarks] = useState<string>('');
+  const [trainInfo, setTrainInfo] = useState<string>('');
+  const [beforeDeparture, setBeforeDeparture] = useState<string>('');
+  const [afterArrive, setAfterArrive] = useState<string>('');
+  const [nextTrainId, setNextTrainId] = useState<string>('');
 
   // For Station/Line dialogs (to be implemented)
   const [stationDialogOpen, setStationDialogOpen] = useState(false);
   const [lineDialogOpen, setLineDialogOpen] = useState(false);
+
+  const trainConfig = createDefaultTRViSConfiguration().train;
 
   if (
     !workGroup ||
@@ -112,6 +129,20 @@ export function TrainDetailPage() {
     setCarCount(train.CarCount || '');
     setDestination(train.Destination || '');
     setRemarks(train.Remarks || '');
+    // Advanced properties
+    setSpeedType(train.SpeedType || '');
+    setNominalTractiveCapacity(train.NominalTractiveCapacity || '');
+    setWorkType(train.WorkType || '');
+    setDayCount(train.DayCount || '');
+    setIsRideOnMoving(train.IsRideOnMoving || false);
+    setColor(train.Color || '');
+    setBeginRemarks(train.BeginRemarks || '');
+    setAfterRemarks(train.AfterRemarks || '');
+    setTrainInfo(train.TrainInfo || '');
+    setBeforeDeparture(train.BeforeDeparture || '');
+    setAfterArrive(train.AfterArrive || '');
+    setNextTrainId(train.NextTrainId || '');
+    setEditTabIndex(0);
     setEditDialogOpen(true);
   };
 
@@ -124,7 +155,21 @@ export function TrainDetailPage() {
       CarCount: carCount || undefined,
       Destination: destination || undefined,
       Remarks: remarks || undefined,
+      // Advanced properties
+      SpeedType: speedType || undefined,
+      NominalTractiveCapacity: nominalTractiveCapacity || undefined,
+      WorkType: workType || undefined,
+      DayCount: dayCount || undefined,
+      IsRideOnMoving: isRideOnMoving || undefined,
+      Color: color || undefined,
+      BeginRemarks: beginRemarks || undefined,
+      AfterRemarks: afterRemarks || undefined,
+      TrainInfo: trainInfo || undefined,
+      BeforeDeparture: beforeDeparture || undefined,
+      AfterArrive: afterArrive || undefined,
+      NextTrainId: nextTrainId || undefined,
     });
+    setEditTabIndex(0);
     setEditDialogOpen(false);
   };
 
@@ -248,52 +293,148 @@ export function TrainDetailPage() {
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Edit Train Information</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 2 }}>
-            <TextField
-              autoFocus
-              fullWidth
-              label="Train Number"
-              value={trainNumber}
-              onChange={(e) => setTrainNumber(e.target.value)}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={direction === 1}
-                  onChange={(e) => setDirection(e.target.checked ? 1 : -1)}
-                />
-              }
-              label={`Direction: ${direction === 1 ? 'Down (1)' : 'Up (-1)'}`}
-            />
-            <TextField
-              fullWidth
-              type="text"
-              label="Max Speed (km/h)"
-              value={maxSpeed}
-              onChange={(e) => setMaxSpeed(e.target.value)}
-            />
-            <TextField
-              fullWidth
-              type="number"
-              label="Car Count"
-              value={carCount}
-              onChange={(e) => setCarCount(e.target.value ? parseInt(e.target.value) : '')}
-            />
-            <TextField
-              fullWidth
-              label="Destination"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-            />
-            <TextField
-              fullWidth
-              label="Remarks"
-              multiline
-              rows={3}
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-            />
-          </Stack>
+          <Box sx={{ mt: 2 }}>
+            <Tabs value={editTabIndex} onChange={(_, value) => setEditTabIndex(value)}>
+              <Tab label="Basic" />
+              <Tab label="Advanced" />
+            </Tabs>
+
+            <Box sx={{ mt: 2 }}>
+              {editTabIndex === 0 && (
+                <Stack spacing={2}>
+                  <FormField
+                    label="Train Number"
+                    value={trainNumber}
+                    onChange={(value) => setTrainNumber(value)}
+                    config={trainConfig.trainNumber || { enabled: true, required: true, description: '' }}
+                  />
+                  <FormField
+                    label="Direction"
+                    value={direction}
+                    onChange={(value) => setDirection(value)}
+                    type="number"
+                    config={trainConfig.direction || { enabled: true, required: true, description: '' }}
+                  />
+                  <FormField
+                    label="Max Speed"
+                    value={maxSpeed}
+                    onChange={(value) => setMaxSpeed(value)}
+                    type="text"
+                    config={trainConfig.maxSpeed || { enabled: true, required: false, description: '', unit: 'km/h' }}
+                  />
+                  <FormField
+                    label="Car Count"
+                    value={carCount}
+                    onChange={(value) => setCarCount(value)}
+                    type="number"
+                    config={trainConfig.carCount || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Destination"
+                    value={destination}
+                    onChange={(value) => setDestination(value)}
+                    config={trainConfig.destination || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Remarks"
+                    value={remarks}
+                    onChange={(value) => setRemarks(value)}
+                    type="textarea"
+                    config={trainConfig.remarks || { enabled: true, required: false, description: '' }}
+                  />
+                </Stack>
+              )}
+
+              {editTabIndex === 1 && (
+                <Stack spacing={2}>
+                  <FormField
+                    label="Speed Type"
+                    value={speedType}
+                    onChange={(value) => setSpeedType(value)}
+                    type="text"
+                    config={trainConfig.speedType || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Nominal Tractive Capacity"
+                    value={nominalTractiveCapacity}
+                    onChange={(value) => setNominalTractiveCapacity(value)}
+                    type="text"
+                    config={trainConfig.nominalTractiveCapacity || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Work Type"
+                    value={workType}
+                    onChange={(value) => setWorkType(value)}
+                    type="number"
+                    config={trainConfig.workType || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Day Count"
+                    value={dayCount}
+                    onChange={(value) => setDayCount(value)}
+                    type="number"
+                    config={trainConfig.dayCount || { enabled: true, required: false, description: '', min: 0 }}
+                  />
+                  <FormField
+                    label="Is Ride On Moving"
+                    value={isRideOnMoving}
+                    onChange={(value) => setIsRideOnMoving(value)}
+                    type="boolean"
+                    config={trainConfig.isRideOnMoving || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Color"
+                    value={color}
+                    onChange={(value) => setColor(value)}
+                    type="color"
+                    config={trainConfig.color || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Begin Remarks"
+                    value={beginRemarks}
+                    onChange={(value) => setBeginRemarks(value)}
+                    type="textarea"
+                    config={trainConfig.beginRemarks || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="After Remarks"
+                    value={afterRemarks}
+                    onChange={(value) => setAfterRemarks(value)}
+                    type="textarea"
+                    config={trainConfig.afterRemarks || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Train Info"
+                    value={trainInfo}
+                    onChange={(value) => setTrainInfo(value)}
+                    type="textarea"
+                    config={trainConfig.trainInfo || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Before Departure"
+                    value={beforeDeparture}
+                    onChange={(value) => setBeforeDeparture(value)}
+                    type="text"
+                    config={trainConfig.beforeDeparture || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="After Arrive"
+                    value={afterArrive}
+                    onChange={(value) => setAfterArrive(value)}
+                    type="text"
+                    config={trainConfig.afterArrive || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="Next Train ID"
+                    value={nextTrainId}
+                    onChange={(value) => setNextTrainId(value)}
+                    type="text"
+                    config={trainConfig.nextTrainId || { enabled: true, required: false, description: '' }}
+                  />
+                </Stack>
+              )}
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
