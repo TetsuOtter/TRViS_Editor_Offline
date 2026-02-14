@@ -16,8 +16,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  FormControlLabel,
-  Switch,
   Grid,
   MenuItem,
   Tabs,

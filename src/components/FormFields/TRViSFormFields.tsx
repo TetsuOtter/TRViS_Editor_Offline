@@ -3,7 +3,7 @@
  * Reusable form field components for editing TRViS data models
  */
 
-import { TextField, FormControlLabel, Switch, Stack, Box, Typography, Tooltip } from '@mui/material';
+import { TextField, FormControlLabel, Switch, Stack, Typography, Tooltip } from '@mui/material';
 import HelpIcon from '@mui/icons-material/Help';
 
 interface FieldConfig {
@@ -99,6 +99,9 @@ export function FormField({
     );
   }
 
+  const isTextarea = type === 'textarea';
+  const inputType = isTextarea ? 'text' : (type as any);
+
   return (
     <TextField
       fullWidth
@@ -112,9 +115,9 @@ export function FormField({
           onChange(e.target.value || undefined);
         }
       }}
-      type={type === 'boolean' ? 'checkbox' : type}
-      multiline={multiline}
-      rows={multiline ? rows : undefined}
+      type={inputType}
+      multiline={isTextarea || multiline}
+      rows={isTextarea || multiline ? rows : undefined}
       placeholder={placeholder}
       select={select}
       required={config.required}

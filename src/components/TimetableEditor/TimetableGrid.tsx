@@ -9,7 +9,6 @@ import {
   TextField,
   Stack,
   Tooltip,
-  IconButton,
   Tabs,
   Tab,
 } from '@mui/material';
