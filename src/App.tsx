@@ -1,9 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { Box, AppBar, Toolbar, Drawer, List, ListItem, ListItemText, Typography, Divider, IconButton, Tooltip, CircularProgress } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useEffect } from 'react';
 import { useProjectStore } from './store/projectStore';
 import { useAutoSave } from './hooks/useAutoSave';
+import { useTheme } from './contexts/ThemeContext';
 import EditorPage from './pages/EditorPage';
 import SettingsPage from './pages/SettingsPage';
 import ThirdPartyLicensesPage from './pages/ThirdPartyLicensesPage';
@@ -17,6 +20,7 @@ function AppContent() {
   const setActiveProject = useProjectStore((state) => state.setActiveProject);
   const isInitialized = useProjectStore((state) => state.isInitialized);
   const initialize = useProjectStore((state) => state.initialize);
+  const { mode, setMode, effectiveMode } = useTheme();
 
   // Initialize store on mount
   useEffect(() => {
@@ -24,6 +28,16 @@ function AppContent() {
   }, [initialize]);
 
   useAutoSave(true);
+
+  const handleThemeToggle = () => {
+    if (mode === 'system') {
+      // If on system mode, switch to the opposite of current effective mode
+      setMode(effectiveMode === 'dark' ? 'light' : 'dark');
+    } else {
+      // Toggle between light and dark
+      setMode(mode === 'dark' ? 'light' : 'dark');
+    }
+  };
 
   // Show loading state
   if (!isInitialized) {
@@ -50,6 +64,11 @@ function AppContent() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             TRViS Editor {activeProject ? `- ${activeProject.name}` : ''}
           </Typography>
+          <Tooltip title={`Switch to ${effectiveMode === 'dark' ? 'light' : 'dark'} mode`}>
+            <IconButton color="inherit" onClick={handleThemeToggle}>
+              {effectiveMode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Settings">
             <IconButton color="inherit" onClick={() => navigate('/settings')}>
               <SettingsIcon />

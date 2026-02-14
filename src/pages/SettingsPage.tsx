@@ -1,12 +1,14 @@
-import { Box, Typography, Card, CardContent, Button, Stack, Alert } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button, Stack, Alert, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import GavelIcon from '@mui/icons-material/Gavel';
 import { useNavigate } from 'react-router-dom';
 import { JsonImport } from '../components/ImportExport/JsonImport';
 import { AppLinkButton } from '../components/ImportExport/AppLinkButton';
+import { useTheme } from '../contexts/ThemeContext';
 
 function SettingsPage() {
   const navigate = useNavigate();
+  const { mode, setMode } = useTheme();
 
   const handleExportStorage = () => {
     const allData = localStorage;
@@ -67,6 +69,28 @@ function SettingsPage() {
     <Box>
       <Stack spacing={2}>
         <Typography variant="h5">Settings</Typography>
+
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Appearance
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+              Choose your preferred color theme for the application.
+            </Typography>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Theme Mode</FormLabel>
+              <RadioGroup
+                value={mode}
+                onChange={(e) => setMode(e.target.value as 'light' | 'dark' | 'system')}
+              >
+                <FormControlLabel value="light" control={<Radio />} label="Light" />
+                <FormControlLabel value="dark" control={<Radio />} label="Dark" />
+                <FormControlLabel value="system" control={<Radio />} label="System" />
+              </RadioGroup>
+            </FormControl>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardContent>
