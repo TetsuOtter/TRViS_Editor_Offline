@@ -16,6 +16,10 @@ describe('ProjectStore Integration with Repository', () => {
     // Clear localStorage before each test
     localStorage.clear();
 
+    // Reset stores
+    useDataStore.setState({ workGroups: [] });
+    useEditorStore.setState({ stations: [], lines: [], trainTypePatterns: [] });
+
     // Initialize project store
     await useProjectStore.getState().initialize();
   });
@@ -50,7 +54,7 @@ describe('ProjectStore Integration with Repository', () => {
       const projectData = useProjectStore.getState().getProjectData(projectId);
 
       expect(projectData).toBeDefined();
-      expect(projectData?.database).toEqual({ workGroups: [] });
+      expect(projectData?.database).toEqual([]);
       expect(projectData?.metadata).toEqual({
         stations: [],
         lines: [],
@@ -107,7 +111,7 @@ describe('ProjectStore Integration with Repository', () => {
       const workGroup = { Name: 'Group 1', Works: [] };
       dataStore.addWorkGroup(workGroup);
 
-      expect(dataStore.workGroups).toHaveLength(1);
+      expect(useDataStore.getState().workGroups).toHaveLength(1);
     });
 
     it('should sync EditorStore with ProjectStore', async () => {

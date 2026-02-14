@@ -105,6 +105,13 @@ describe('HttpAdapter', () => {
     });
 
     it('should retry failed requests', async () => {
+      // Initialize with a working mock first
+      vi.stubGlobal('fetch', vi.fn(() =>
+        Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
+      ));
+      await adapter.initialize();
+
+      // Now set up the retry mock
       const project = createMockProject();
       let attempts = 0;
       const mockFetch = vi.fn(() => {
@@ -119,7 +126,6 @@ describe('HttpAdapter', () => {
       });
       vi.stubGlobal('fetch', mockFetch);
 
-      await adapter.initialize();
       const result = await adapter.createProject(project);
 
       expect(result.success).toBe(true);
@@ -257,33 +263,28 @@ describe('HttpAdapter', () => {
     });
 
     it('should sync pending operations', async () => {
-      const project = createMockProject();
-      let calls = 0;
-      const mockFetch = vi.fn(() => {
-        calls++;
-        if (calls === 1) {
-          // Fail on first create
-          return Promise.reject(new Error('Network error'));
-        }
-        // Succeed on sync retry
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(project),
-        });
-      });
-      vi.stubGlobal('fetch', mockFetch);
-
+      // Initialize with a working mock
+      vi.stubGlobal('fetch', vi.fn(() =>
+        Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
+      ));
       await adapter.initialize();
+
+      // Make create fail (all retries)
+      const project = createMockProject();
+      vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('Network error'))));
 
       // Create should fail and queue
       const createResult = await adapter.createProject(project);
       expect(createResult.success).toBe(false);
 
-      // Mock online status
+      // Mock online status and make sync succeed
       Object.defineProperty(navigator, 'onLine', {
         value: true,
         writable: true,
       });
+      vi.stubGlobal('fetch', vi.fn(() =>
+        Promise.resolve({ ok: true, json: () => Promise.resolve(project) })
+      ));
 
       // Sync should succeed
       const syncResult = await adapter.sync();
@@ -350,17 +351,30 @@ describe('HttpAdapter', () => {
 
   describe('Request Timeout', () => {
     it('should timeout long requests', async () => {
-      const mockFetch = vi.fn(() => new Promise(() => {})); // Never resolves
-      vi.stubGlobal('fetch', mockFetch);
-
+      // Initialize with a working mock first
+      vi.stubGlobal('fetch', vi.fn(() =>
+        Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
+      ));
       await adapter.initialize();
+
+      // Now set up a mock that responds to abort signals
+      const mockFetch = vi.fn((_url: string, options?: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          if (options?.signal) {
+            options.signal.addEventListener('abort', () => {
+              reject(new DOMException('The operation was aborted', 'AbortError'));
+            });
+          }
+        })
+      );
+      vi.stubGlobal('fetch', mockFetch);
 
       const project = createMockProject();
       const result = await adapter.createProject(project);
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Request failed');
-    });
+    }, 15000);
   });
 
   describe('HTTP Error Handling', () => {

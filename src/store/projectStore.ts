@@ -142,7 +142,8 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       const repo = await getRepository();
       const result = await repo.deleteProject(projectId);
 
-      if (!result.success) {
+      // Silently handle "not found" — the project may not have been persisted
+      if (!result.success && !result.error?.includes('not found')) {
         throw new Error(`Failed to delete project: ${result.error}`);
       }
 

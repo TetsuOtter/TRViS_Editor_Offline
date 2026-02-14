@@ -45,8 +45,8 @@ describe('LocalStorageAdapter', () => {
     });
 
     it('should handle localStorage unavailability', async () => {
-      // Mock localStorage to be unavailable
-      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      // Mock localStorage to be unavailable (isLocalStorageAvailable calls setItem)
+      const setItemSpy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
         throw new Error('localStorage unavailable');
       });
 
@@ -56,7 +56,7 @@ describe('LocalStorageAdapter', () => {
       expect(result.success).toBe(false);
       expect(result.error).toContain('localStorage is not available');
 
-      getItemSpy.mockRestore();
+      setItemSpy.mockRestore();
     });
 
     it('should detect corrupted localStorage data', async () => {
@@ -242,14 +242,14 @@ describe('LocalStorageAdapter', () => {
 
         // Set project1 as active
         const state = await adapter.loadStorageState();
-        state.data.activeProjectId = project1.id;
+        state.data.activeProjectId = project1.projectId;
         await adapter.saveStorageState(state.data);
 
         // Delete active project
-        await adapter.deleteProject(project1.id);
+        await adapter.deleteProject(project1.projectId);
 
         const newState = await adapter.loadStorageState();
-        expect(newState.data.activeProjectId).not.toBe(project1.id);
+        expect(newState.data.activeProjectId).not.toBe(project1.projectId);
       });
     });
 
@@ -306,7 +306,7 @@ describe('LocalStorageAdapter', () => {
       });
 
       it('should handle save errors', async () => {
-        const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        const setItemSpy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
           throw new Error('Storage full');
         });
 
@@ -432,10 +432,10 @@ describe('LocalStorageAdapter', () => {
 
       // Update one
       projects[0].name = 'Updated Project 1';
-      await adapter.updateProject(projects[0].id, projects[0]);
+      await adapter.updateProject(projects[0].projectId, projects[0]);
 
       // Delete one
-      await adapter.deleteProject(projects[1].id);
+      await adapter.deleteProject(projects[1].projectId);
 
       const final = await adapter.getProjects();
       expect(final.data).toHaveLength(2);

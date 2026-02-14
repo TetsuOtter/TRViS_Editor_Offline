@@ -3,7 +3,7 @@
  */
 
 import type { Database } from './trvis';
-import type { EditorMetadata, Project } from './editor';
+import type { EditorMetadata } from './editor';
 
 export interface ProjectData {
   projectId: string;
@@ -15,7 +15,6 @@ export interface ProjectData {
 }
 
 export interface StorageState {
-  projects: Project[];
-  projectData: Record<string, ProjectData>;
+  projectData: ProjectData[];
   activeProjectId: string | null;
 }
