@@ -1,9 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import { Box, AppBar, Toolbar, Drawer, List, ListItem, ListItemText, Typography, Divider, IconButton, Tooltip, CircularProgress } from '@mui/material';
+import { Box, AppBar, Toolbar, Drawer, List, ListItem, ListItemText, Typography, Divider, IconButton, Tooltip, Button, CircularProgress } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { useEffect } from 'react';
+import HomeIcon from '@mui/icons-material/Home';
+import { useEffect, useState } from 'react';
 import { useProjectStore } from './store/projectStore';
 import { useAutoSave } from './hooks/useAutoSave';
 import { useTheme } from './contexts/ThemeContext';
@@ -21,6 +23,7 @@ function AppContent() {
   const isInitialized = useProjectStore((state) => state.isInitialized);
   const initialize = useProjectStore((state) => state.initialize);
   const { mode, setMode, effectiveMode } = useTheme();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Initialize store on mount
   useEffect(() => {
@@ -61,24 +64,31 @@ function AppContent() {
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            TRViS Editor {activeProject ? `- ${activeProject.name}` : ''}
-          </Typography>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            onClick={() => setDrawerOpen(true)}
+            edge="start"
+          >
+            <MenuIcon />
+          </IconButton>
+          <Button color="inherit" onClick={() => navigate('/')} sx={{ textTransform: 'none' }}>
+            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+              TRViS Editor {activeProject ? `- ${activeProject.name}` : ''}
+            </Typography>
+          </Button>
           <Tooltip title={`Switch to ${effectiveMode === 'dark' ? 'light' : 'dark'} mode`}>
             <IconButton color="inherit" onClick={handleThemeToggle}>
               {effectiveMode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Settings">
-            <IconButton color="inherit" onClick={() => navigate('/settings')}>
-              <SettingsIcon />
             </IconButton>
           </Tooltip>
         </Toolbar>
       </AppBar>
 
       <Drawer
-        variant="permanent"
+        variant="temporary"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
         sx={{
           width: drawerWidth,
           flexShrink: 0,
@@ -89,6 +99,26 @@ function AppContent() {
           },
         }}
       >
+        <Typography variant="subtitle2" sx={{ p: 2, fontWeight: 'bold' }}>
+          Menu
+        </Typography>
+        <List>
+          <ListItem
+            onClick={() => { navigate('/'); setDrawerOpen(false); }}
+            sx={{
+              cursor: 'pointer',
+              '&:hover': {
+                backgroundColor: 'action.hover',
+              },
+            }}
+          >
+            <HomeIcon sx={{ mr: 1 }} />
+            <ListItemText primary="Top" />
+          </ListItem>
+        </List>
+
+        <Divider sx={{ my: 1 }} />
+
         <Typography variant="subtitle2" sx={{ p: 2, fontWeight: 'bold' }}>
           Projects
         </Typography>
@@ -101,7 +131,7 @@ function AppContent() {
             projects.map((project) => (
               <ListItem
                 key={project.id}
-                onClick={() => setActiveProject(project.id).catch(error => console.error('Failed to set active project:', error))}
+                onClick={() => { setActiveProject(project.id).catch(error => console.error('Failed to set active project:', error)); setDrawerOpen(false); }}
                 sx={{
                   backgroundColor:
                     activeProjectId === project.id ? 'action.selected' : 'transparent',
@@ -121,7 +151,7 @@ function AppContent() {
 
         <List>
           <ListItem
-            onClick={() => navigate('/settings')}
+            onClick={() => { navigate('/settings'); setDrawerOpen(false); }}
             sx={{
               cursor: 'pointer',
               '&:hover': {
