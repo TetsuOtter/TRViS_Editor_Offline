@@ -1,6 +1,7 @@
 /**
  * Utilities for handling HH:MM:SS time strings
  */
+import type { TimeDisplaySettings } from '../types/editor';
 
 export interface TimeComponents {
   hours: number;
@@ -27,7 +28,10 @@ export function timeStringToSeconds(time: string | null | undefined): number {
 /**
  * Convert total seconds to HH:MM:SS time string
  */
-export function secondsToTimeString(totalSeconds: number): string {
+export function secondsToTimeString(totalSeconds: number | undefined): string {
+  if (totalSeconds == null) {
+    return "";
+  }
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
@@ -131,4 +135,42 @@ export function normalizeTimeFormat(time: string | null | undefined): string | u
 
   // For other formats (mm-only, invalid), return as-is
   return time;
+}
+
+/**
+ * Process time string and create appropriate display settings
+ * Used when loading from JSON to separate time value and display settings
+ * 
+ * Returns: { timeSeconds: number | undefined, settings: TimeDisplaySettings | undefined }
+ */
+export function processTimeSettings(
+  timeValue: string | undefined
+): { timeSeconds: number | undefined; settings: TimeDisplaySettings | undefined } {
+  if (!timeValue) {
+    return { timeSeconds: undefined, settings: undefined };
+  }
+
+  const formatType = detectTimeFormatType(timeValue);
+
+  if (formatType === 'full') {
+    // HH:MM:SS format - use as normal time
+    const seconds = timeStringToSeconds(timeValue);
+    return { timeSeconds: seconds, settings: undefined };
+  } else if (formatType === 'hhmm') {
+    // HH:MM: format - normalize to HH:MM:00 and use as normal time
+    const normalizedValue = normalizeTimeFormat(timeValue);
+    const seconds = normalizedValue ? timeStringToSeconds(normalizedValue) : undefined;
+    return { timeSeconds: seconds, settings: undefined };
+  } else {
+    // Invalid format - move to customText
+    return {
+      timeSeconds: undefined,
+      settings: {
+        showTime: false,
+        showHours: true,
+        showArrowForPass: timeValue === '↓',
+        customText: timeValue,
+      },
+    };
+  }
 }

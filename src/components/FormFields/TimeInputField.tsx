@@ -7,12 +7,13 @@ import {
   Divider,
 } from '@mui/material';
 import type { TimeDisplaySettings } from '../../types/editor';
+import { secondsToTimeString } from '../../utils/timeUtils';
 
 interface TimeInputFieldProps {
   label: string;
-  timeValue: string | undefined;
+  timeValue: number | undefined;
   settings: TimeDisplaySettings | undefined;
-  onTimeChange: (value: string) => void;
+  onTimeChange: (value: number) => void;
   onSettingsChange: (settings: TimeDisplaySettings) => void;
   isPassStation?: boolean;
 }
@@ -39,7 +40,9 @@ export function TimeInputField({
   const currentSettings = settings || defaultSettings;
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onTimeChange(e.target.value);
+    const timeStr = e.target.value; // Expecting HH:MM or HH:MM:SS
+    const time = new Date(`1970-01-01T${timeStr}Z`).getTime() / 1000; // Convert to seconds from midnight
+    onTimeChange(time);
   };
 
   const handleShowTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,7 +80,7 @@ export function TimeInputField({
         <TextField
           label={label}
           type="time"
-          value={timeValue || ''}
+          value={secondsToTimeString(timeValue)  || ''}
           onChange={handleTimeChange}
           inputProps={{
             step: 1,

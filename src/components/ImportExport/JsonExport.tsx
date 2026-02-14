@@ -2,7 +2,7 @@ import { Button, Stack } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import { useDataStore } from '../../store/dataStore';
 import { useProjectStore } from '../../store/projectStore';
-import { downloadDatabase } from '../../utils/jsonIO';
+import { downloadDatabaseWithSettings } from '../../utils/jsonIO';
 
 export function JsonExport() {
   const workGroups = useDataStore((state) => state.workGroups);
@@ -15,7 +15,7 @@ export function JsonExport() {
     if (!activeProjectData) return;
 
     const filename = `${activeProjectData.name}-${new Date().toISOString().split('T')[0]}.json`;
-    downloadDatabase(workGroups, filename);
+    downloadDatabaseWithSettings(workGroups, filename);
   };
 
   return (

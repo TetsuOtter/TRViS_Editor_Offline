@@ -11,6 +11,9 @@ import { useProjectStore } from '../projectStore';
 import { useEditorStore } from '../editorStore';
 import { v4 as uuidv4 } from 'uuid';
 import type { Train, TimetableRow, Work, WorkGroup } from '../../types/trvis';
+import type { WorkGroupWithSettings } from '../../types/storage';
+import { convertToEditorDatabase } from '../../utils/jsonIO';
+import { secondsToTimeString } from '../../utils/timeUtils';
 
 describe('TRViS Configuration Persistence E2E Tests', () => {
   beforeEach(async () => {
@@ -41,7 +44,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       work.Trains.push(train);
       workGroup.Works.push(work);
 
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedTrain = useDataStore
         .getState()
@@ -72,14 +75,14 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
 
       work.Trains.push(train);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedRow = useDataStore
         .getState()
         .getTrain(0, 0, 0)?.TimetableRows[0];
 
-      expect(savedRow?.Arrive).toBe('10:30:00');
-      expect(savedRow?.Departure).toBe('10:31:00');
+      expect(savedRow?.Arrive !== undefined ? secondsToTimeString(savedRow.Arrive) : undefined).toBe('10:30:00');
+      expect(savedRow?.Departure !== undefined ? secondsToTimeString(savedRow.Departure) : undefined).toBe('10:31:00');
       expect(savedRow?.DriveTime_MM).toBe(5);
       expect(savedRow?.DriveTime_SS).toBe(30);
     });
@@ -111,7 +114,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
 
       work.Trains.push(train);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedRow = useDataStore
         .getState()
@@ -146,7 +149,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
 
       work.Trains.push(train);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       // Update the row
       const updatedRow: TimetableRow = {
@@ -167,7 +170,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
 
       expect(savedRow?.StationName).toBe('Updated');
       expect(savedRow?.FullName).toBe('Updated Station');
-      expect(savedRow?.Arrive).toBe('12:00:00');
+      expect(savedRow?.Arrive !== undefined ? secondsToTimeString(savedRow.Arrive) : undefined).toBe('12:00:00');
       expect(savedRow?.IsPass).toBe(true);
     });
   });
@@ -189,7 +192,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
 
       work.Trains.push(testTrain);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedTrain = useDataStore
         .getState()
@@ -231,7 +234,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
 
       work.Trains.push(testTrain);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedTrain = useDataStore
         .getState()
@@ -265,7 +268,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
 
       work.Trains.push(testTrain);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       // Update the train
       const updatedTrain: Train = {
@@ -302,7 +305,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       const workGroup = createTestWorkGroup();
 
       workGroup.Works.push(testWork);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedWork = useDataStore
         .getState()
@@ -330,7 +333,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       const workGroup = createTestWorkGroup();
 
       workGroup.Works.push(testWork);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedWork = useDataStore
         .getState()
@@ -354,7 +357,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       const workGroup = createTestWorkGroup();
 
       workGroup.Works.push(testWork);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       // Update the work
       const updatedWork: Work = {
@@ -385,7 +388,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
         Works: [],
       };
 
-      useDataStore.getState().addWorkGroup(testWorkGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(testWorkGroup));
 
       const savedWG = useDataStore
         .getState()
@@ -402,7 +405,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
         Works: [],
       };
 
-      useDataStore.getState().addWorkGroup(testWorkGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(testWorkGroup));
 
       const savedWG = useDataStore
         .getState()
@@ -473,7 +476,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
         ],
       };
 
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       // Verify complete hierarchy
       const savedWG = useDataStore.getState().workGroups[0];
@@ -494,7 +497,8 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       expect(row1?.Location_m).toBe(0);
 
       const row2 = savedTrain?.TimetableRows[1];
-      expect(row2?.Arrive).toBe('07:15:00');
+      expect(row2?.StationName).toBe('Yokohama');
+      expect(row2?.Arrive !== undefined ? secondsToTimeString(row2.Arrive) : 'undefined-value').toBe('07:15:00');
 
       const row3 = savedTrain?.TimetableRows[2];
       expect(row3?.IsLastStop).toBe(true);
@@ -510,7 +514,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       // Add initial data
       work.Trains.push(train);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       // Add and update multiple rows
       const rows: TimetableRow[] = [
@@ -550,7 +554,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
 
       expect(savedTrain?.TimetableRows).toHaveLength(2);
       expect(savedTrain?.TimetableRows[0].StationName).toBe('Station A');
-      expect(savedTrain?.TimetableRows[0].Departure).toBe('10:00:00');
+      expect(savedTrain?.TimetableRows[0].Departure !== undefined ? secondsToTimeString(savedTrain.TimetableRows[0].Departure) : undefined).toBe('10:00:00');
       expect(savedTrain?.TimetableRows[0].IsPass).toBe(true);
       expect(savedTrain?.TimetableRows[1].StationName).toBe('Station B');
       expect(savedTrain?.TimetableRows[1].Departure).toBeUndefined();
@@ -586,7 +590,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
 
       work.Trains.push(train);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
       const savedRow = savedTrain?.TimetableRows[0];
@@ -638,7 +642,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       const work = createTestWork();
       work.Trains.push(advancedTrain);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
 
@@ -676,7 +680,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
 
       const workGroup = createTestWorkGroup();
       workGroup.Works.push(advancedWork);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedWork = useDataStore.getState().workGroups[0].Works[0];
 
@@ -696,7 +700,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
 
       work.Trains.push(train);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       // Update Advanced TimetableRow properties
       const updatedRow: TimetableRow = {
@@ -724,7 +728,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
         Trains: [],
       };
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       // Update both basic and advanced properties
       const updatedWork: Work = {
@@ -762,7 +766,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       const work = createTestWork();
       work.Trains.push(train);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
       expect(savedTrain?.NominalTractiveCapacity).toBe('150kN');
@@ -781,7 +785,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       const work = createTestWork();
       work.Trains.push(train);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       // Simulate UI update
       const updatedTrain: Train = {
@@ -822,7 +826,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       const work = createTestWork();
       work.Trains.push(completeTrain);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
 
@@ -861,7 +865,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       const work = createTestWork();
       work.Trains.push(train);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       // Simulate editing multiple Advanced properties via UI
       const updatedTrain: Train = {
@@ -900,7 +904,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       const work = createTestWork();
       work.Trains.push(train);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
       expect(savedTrain?.Remarks).toBe('Main remark');
@@ -926,7 +930,7 @@ describe('TRViS Configuration Persistence E2E Tests', () => {
       const work = createTestWork();
       work.Trains.push(train);
       workGroup.Works.push(work);
-      useDataStore.getState().addWorkGroup(workGroup);
+      useDataStore.getState().addWorkGroup(convertWorkGroupToEditorFormat(workGroup));
 
       const savedTrain = useDataStore.getState().getTrain(0, 0, 0);
       expect(savedTrain?.MaxSpeed).toBe('100');
@@ -970,4 +974,13 @@ function createTestTimetableRow(): TimetableRow {
     StationName: 'Test Station',
     Location_m: 100,
   };
+}
+
+/**
+ * Convert a JSON format WorkGroup to Editor format WorkGroupWithSettings
+ * by processing time values through convertToEditorDatabase
+ */
+function convertWorkGroupToEditorFormat(workGroup: WorkGroup): WorkGroupWithSettings {
+  const converted = convertToEditorDatabase([workGroup]);
+  return converted[0];
 }

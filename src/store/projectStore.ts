@@ -1,10 +1,50 @@
 import { create } from 'zustand';
 import type { Project, EditorMetadata } from '../types/editor';
-import type { ProjectData } from '../types/storage';
+import type { ProjectData, DatabaseWithSettings } from '../types/storage';
 import type { Database } from '../types/trvis';
 import type { IDataRepository } from '../data/types';
 import { repositoryFactory } from '../data/RepositoryFactory';
 import { v4 as uuidv4 } from 'uuid';
+import { convertToEditorDatabase } from '../utils/jsonIO';
+
+// Helper to detect if a row is in editor format (has numeric times)
+const isRowInEditorFormat = (row: any): boolean => {
+  return typeof row.Arrive === 'number' || typeof row.Departure === 'number';
+};
+
+// Helper to check if any row in a train is in editor format
+const isTrainInEditorFormat = (train: any): boolean => {
+  return train.TimetableRows && train.TimetableRows.length > 0 && 
+    train.TimetableRows.some((row: any) => isRowInEditorFormat(row));
+};
+
+// Helper to check if any train in a work is in editor format
+const isWorkInEditorFormat = (work: any): boolean => {
+  return work.Trains && work.Trains.length > 0 && 
+    work.Trains.some((train: any) => isTrainInEditorFormat(train));
+};
+
+// Helper to check if any work in a workgroup is in editor format
+const isWorkGroupInEditorFormat = (workGroup: any): boolean => {
+  return workGroup.Works && workGroup.Works.length > 0 && 
+    workGroup.Works.some((work: any) => isWorkInEditorFormat(work));
+};
+
+// Helper to check if any workgroup in a database is in editor format
+const isDatabaseInEditorFormat = (database: any[]): boolean => {
+  return database && database.length > 0 && 
+    database.some((workGroup: any) => isWorkGroupInEditorFormat(workGroup));
+};
+
+// Helper to ensure database is in editor format
+const ensureDatabaseWithSettings = (database: Database | DatabaseWithSettings): DatabaseWithSettings => {
+  // If it's already in editor format, return as-is
+  if (isDatabaseInEditorFormat(database as any[])) {
+    return database as DatabaseWithSettings;
+  }
+  // Otherwise convert from JSON format
+  return convertToEditorDatabase(database as Database);
+};
 
 interface ProjectState {
   projects: Project[];
@@ -21,7 +61,7 @@ interface ProjectState {
   deleteProject: (projectId: string) => Promise<void>;
   setActiveProject: (projectId: string) => Promise<void>;
   clearActiveProject: () => void;
-  updateProjectData: (projectId: string, database: Database) => Promise<void>;
+  updateProjectData: (projectId: string, database: Database | DatabaseWithSettings) => Promise<void>;
   updateProjectMetadata: (projectId: string, metadata: EditorMetadata) => Promise<void>;
 
   // Queries
@@ -188,7 +228,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       set({ activeProjectId: null });
     },
 
-    updateProjectData: async (projectId: string, database: Database) => {
+    updateProjectData: async (projectId: string, database: Database | DatabaseWithSettings) => {
       const repo = await getRepository();
       const { projectData } = get();
       const current = projectData[projectId];
@@ -197,9 +237,11 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         throw new Error(`Project ${projectId} not found`);
       }
 
+      const normalizedDatabase = ensureDatabaseWithSettings(database);
+
       const updated: ProjectData = {
         ...current,
-        database,
+        database: normalizedDatabase,
         lastModified: Date.now(),
       };
 

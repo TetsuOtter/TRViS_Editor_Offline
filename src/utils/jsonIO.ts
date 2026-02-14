@@ -1,4 +1,6 @@
 import type { Database, Train, TimetableRow, Work, WorkGroup } from '../types/trvis';
+import type { DatabaseWithSettings, TrainWithSettings, TimetableRowWithSettings, WorkGroupWithSettings } from '../types/storage';
+import { processTimeSettings, secondsToTimeString } from './timeUtils';
 
 /**
  * Validation error information
@@ -322,6 +324,151 @@ export function parseDatabase(jsonString: string): { data: Database; error: null
 }
 
 /**
+ * Convert DatabaseWithSettings (editor storage format) to Database (TRViS JSON format)
+ * Converts time values from seconds back to HH:MM:SS strings and removes editor-specific fields
+ */
+export function convertToTRViSDatabase(database: DatabaseWithSettings): Database {
+  return database.map((workGroup) => ({
+    Id: workGroup.Id,
+    Name: workGroup.Name,
+    DBVersion: workGroup.DBVersion,
+    Works: workGroup.Works.map((work) => ({
+      Id: work.Id,
+      Name: work.Name,
+      AffectDate: work.AffectDate,
+      AffixContentType: work.AffixContentType,
+      AffixContent: work.AffixContent,
+      Remarks: work.Remarks,
+      HasETrainTimetable: work.HasETrainTimetable,
+      ETrainTimetableContentType: work.ETrainTimetableContentType,
+      ETrainTimetableContent: work.ETrainTimetableContent,
+      Trains: work.Trains.map((train) => ({
+        Id: train.Id,
+        TrainNumber: train.TrainNumber,
+        MaxSpeed: train.MaxSpeed,
+        SpeedType: train.SpeedType,
+        NominalTractiveCapacity: train.NominalTractiveCapacity,
+        CarCount: train.CarCount,
+        Destination: train.Destination,
+        Direction: train.Direction,
+        WorkType: train.WorkType,
+        DayCount: train.DayCount,
+        IsRideOnMoving: train.IsRideOnMoving,
+        Color: train.Color,
+        BeginRemarks: train.BeginRemarks,
+        AfterRemarks: train.AfterRemarks,
+        Remarks: train.Remarks,
+        BeforeDeparture: train.BeforeDeparture,
+        AfterArrive: train.AfterArrive,
+        TrainInfo: train.TrainInfo,
+        NextTrainId: train.NextTrainId,
+        TimetableRows: train.TimetableRows.map((row) => ({
+          Id: row.Id,
+          StationName: row.StationName,
+          FullName: row.FullName,
+          Location_m: row.Location_m,
+          Longitude_deg: row.Longitude_deg,
+          Latitude_deg: row.Latitude_deg,
+          OnStationDetectRadius_m: row.OnStationDetectRadius_m,
+          DriveTime_MM: row.DriveTime_MM,
+          DriveTime_SS: row.DriveTime_SS,
+          Arrive: row.Arrive !== undefined ? secondsToTimeString(row.Arrive) : undefined,
+          Departure: row.Departure !== undefined ? secondsToTimeString(row.Departure) : undefined,
+          TrackName: row.TrackName,
+          IsOperationOnlyStop: row.IsOperationOnlyStop,
+          IsPass: row.IsPass,
+          HasBracket: row.HasBracket,
+          IsLastStop: row.IsLastStop,
+          RunInLimit: row.RunInLimit,
+          RunOutLimit: row.RunOutLimit,
+          RecordType: row.RecordType,
+          WorkType: row.WorkType,
+          Remarks: row.Remarks,
+          MarkerColor: row.MarkerColor,
+          MarkerText: row.MarkerText,
+        } as TimetableRow)),
+      } as Train)),
+    } as Work)),
+  } as WorkGroup)) as Database;
+}
+
+/**
+ * Convert Database (TRViS JSON format) to DatabaseWithSettings (editor storage format)
+ * Adds editor-specific fields initialized to undefined
+ */
+export function convertToEditorDatabase(database: Database): DatabaseWithSettings {
+  return database.map((workGroup) => ({
+    Id: workGroup.Id,
+    Name: workGroup.Name,
+    DBVersion: workGroup.DBVersion,
+    Works: workGroup.Works.map((work) => ({
+      Id: work.Id,
+      Name: work.Name,
+      AffectDate: work.AffectDate,
+      AffixContentType: work.AffixContentType,
+      AffixContent: work.AffixContent,
+      Remarks: work.Remarks,
+      HasETrainTimetable: work.HasETrainTimetable,
+      ETrainTimetableContentType: work.ETrainTimetableContentType,
+      ETrainTimetableContent: work.ETrainTimetableContent,
+      Trains: work.Trains.map((train) => ({
+        Id: train.Id,
+        TrainNumber: train.TrainNumber,
+        MaxSpeed: train.MaxSpeed,
+        SpeedType: train.SpeedType,
+        NominalTractiveCapacity: train.NominalTractiveCapacity,
+        CarCount: train.CarCount,
+        Destination: train.Destination,
+        Direction: train.Direction,
+        WorkType: train.WorkType,
+        DayCount: train.DayCount,
+        IsRideOnMoving: train.IsRideOnMoving,
+        Color: train.Color,
+        BeginRemarks: train.BeginRemarks,
+        AfterRemarks: train.AfterRemarks,
+        Remarks: train.Remarks,
+        BeforeDeparture: train.BeforeDeparture,
+        AfterArrive: train.AfterArrive,
+        TrainInfo: train.TrainInfo,
+        NextTrainId: train.NextTrainId,
+        TimetableRows: train.TimetableRows.map((row) => {
+          const arriveResult = processTimeSettings(row.Arrive);
+          const departureResult = processTimeSettings(row.Departure);
+
+          return {
+            Id: row.Id,
+            StationName: row.StationName,
+            FullName: row.FullName,
+            Location_m: row.Location_m,
+            Longitude_deg: row.Longitude_deg,
+            Latitude_deg: row.Latitude_deg,
+            OnStationDetectRadius_m: row.OnStationDetectRadius_m,
+            DriveTime_MM: row.DriveTime_MM,
+            DriveTime_SS: row.DriveTime_SS,
+            Arrive: arriveResult.timeSeconds,
+            Departure: departureResult.timeSeconds,
+            TrackName: row.TrackName,
+            IsOperationOnlyStop: row.IsOperationOnlyStop,
+            IsPass: row.IsPass,
+            HasBracket: row.HasBracket,
+            IsLastStop: row.IsLastStop,
+            RunInLimit: row.RunInLimit,
+            RunOutLimit: row.RunOutLimit,
+            RecordType: row.RecordType,
+            WorkType: row.WorkType,
+            Remarks: row.Remarks,
+            MarkerColor: row.MarkerColor,
+            MarkerText: row.MarkerText,
+            arriveSettings: arriveResult.settings,
+            departureSettings: departureResult.settings,
+          } as TimetableRowWithSettings;
+        }),
+      } as TrainWithSettings)),
+    } as any)), // WorkWithSettings
+  } as WorkGroupWithSettings)) as DatabaseWithSettings;
+}
+
+/**
  * Export Database to JSON string
  */
 export function databaseToJSON(database: Database): string {
@@ -329,10 +476,36 @@ export function databaseToJSON(database: Database): string {
 }
 
 /**
+ * Export DatabaseWithSettings to JSON string
+ * Automatically converts to TRViS format before exporting
+ */
+export function databaseWithSettingsToJSON(database: DatabaseWithSettings): string {
+  const trvisdatabase = convertToTRViSDatabase(database);
+  return databaseToJSON(trvisdatabase);
+}
+
+/**
  * Download database as JSON file
  */
 export function downloadDatabase(database: Database, filename: string): void {
   const jsonString = databaseToJSON(database);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Download DatabaseWithSettings as JSON file (converts to TRViS format)
+ */
+export function downloadDatabaseWithSettings(database: DatabaseWithSettings, filename: string): void {
+  const jsonString = databaseWithSettingsToJSON(database);
   const blob = new Blob([jsonString], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
 

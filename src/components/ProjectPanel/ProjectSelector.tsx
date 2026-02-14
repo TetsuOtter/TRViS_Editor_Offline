@@ -23,8 +23,9 @@ import AddIcon from '@mui/icons-material/Add';
 import UploadIcon from '@mui/icons-material/Upload';
 import { useProjectStore } from '../../store/projectStore';
 import { useDataStore } from '../../store/dataStore';
-import { parseDatabase, readFileAsText } from '../../utils/jsonIO';
+import { parseDatabase, readFileAsText, convertToEditorDatabase } from '../../utils/jsonIO';
 import type { Database } from '../../types/trvis';
+import type { DatabaseWithSettings } from '../../types/storage';
 import type { Station, Line, LineStation, EditorMetadata } from '../../types/editor';
 
 async function extractAndSaveMetadata(projectId: string, database: Database) {
@@ -126,18 +127,21 @@ export function ProjectSelector() {
         return;
       }
 
+      // Convert TRViS Database to editor format with display settings
+      const editorDatabase: DatabaseWithSettings = convertToEditorDatabase(data as Database);
+
       // Create new project with imported data
       const projectName = file.name.replace(/\.json$/, '');
       const newProjectId = await createProject(projectName);
 
       // Update project with imported database and persist to localStorage
-      await updateProjectData(newProjectId, data as Database);
+      await updateProjectData(newProjectId, editorDatabase);
 
       // Auto-generate Line and Stations from JSON
       await extractAndSaveMetadata(newProjectId, data as Database);
 
       // Update UI state
-      setWorkGroups(data);
+      setWorkGroups(editorDatabase);
     } catch (error) {
       setImportError(
         `Failed to import file: ${error instanceof Error ? error.message : 'Unknown error'}`

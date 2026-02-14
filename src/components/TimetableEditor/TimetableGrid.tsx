@@ -35,9 +35,9 @@ import { useProjectStore } from '../../store/projectStore';
 import { createDefaultTRViSConfiguration } from '../../types/trvisconfiguration';
 import { FormField } from '../FormFields/TRViSFormFields';
 import { TimeInputField } from '../FormFields/TimeInputField';
-import type { TimetableRow } from '../../types/trvis';
+import type { TimetableRowWithSettings } from '../../types/storage';
 import type { TimeDisplaySettings } from '../../types/editor';
-import { adjustTime, detectTimeFormatType, normalizeTimeFormat } from '../../utils/timeUtils';
+import { secondsToTimeString, timeStringToSeconds } from '../../utils/timeUtils';
 import { v4 as uuidv4 } from 'uuid';
 
 interface TimetableGridProps {
@@ -54,7 +54,7 @@ interface TimeAdjustment {
 
 interface EditingRow {
   rowIndex: number;
-  row: TimetableRow;
+  row: TimetableRowWithSettings;
   arriveSettings?: TimeDisplaySettings;
   departureSettings?: TimeDisplaySettings;
 }
@@ -98,7 +98,7 @@ export function TimetableGrid({
   }));
 
   const handleAddRow = () => {
-    const newRow: TimetableRow = {
+    const newRow: TimetableRowWithSettings = {
       Id: uuidv4(),
       StationName: 'New Station',
       Location_m: 0,
@@ -117,14 +117,24 @@ export function TimetableGrid({
   };
 
   const processRowUpdate = (newRow: (typeof rows)[0]) => {
-    const updatedRow = { ...newRow };
-    delete (updatedRow as Record<string, unknown>).id;
+    // Destructure to remove id property from the row
+    const { id, ...updatedRowData } = newRow;
+    const updatedRow: TimetableRowWithSettings = updatedRowData as TimetableRowWithSettings;
+
+    // Convert time string values to seconds if they were edited inline
+    if (typeof updatedRow.Arrive === 'string') {
+      updatedRow.Arrive = updatedRow.Arrive ? timeStringToSeconds(updatedRow.Arrive) : undefined;
+    }
+    if (typeof updatedRow.Departure === 'string') {
+      updatedRow.Departure = updatedRow.Departure ? timeStringToSeconds(updatedRow.Departure) : undefined;
+    }
+
     updateTimetableRow(
       workGroupIndex,
       workIndex,
       trainIndex,
       newRow.id as number,
-      updatedRow as TimetableRow
+      updatedRow
     );
     return newRow;
   };
@@ -133,17 +143,15 @@ export function TimetableGrid({
     if (timeAdjust.startRowIndex === null) return;
 
     const startRow = train.TimetableRows[timeAdjust.startRowIndex];
-    if (!startRow?.Arrive && !startRow?.Departure) return;
+    if (startRow?.Arrive === undefined && startRow?.Departure === undefined) return;
 
     for (let i = timeAdjust.startRowIndex + 1; i < train.TimetableRows.length; i++) {
       const row = { ...train.TimetableRows[i] };
       if (row.Arrive != null) {
-        const adjusted = adjustTime(row.Arrive, timeAdjust.deltaSeconds);
-        row.Arrive = adjusted || undefined;
+        row.Arrive = Math.max(0, row.Arrive + timeAdjust.deltaSeconds);
       }
       if (row.Departure != null) {
-        const adjusted = adjustTime(row.Departure, timeAdjust.deltaSeconds);
-        row.Departure = adjusted || undefined;
+        row.Departure = Math.max(0, row.Departure + timeAdjust.deltaSeconds);
       }
       updateTimetableRow(workGroupIndex, workIndex, trainIndex, i, row);
     }
@@ -154,55 +162,11 @@ export function TimetableGrid({
   const handleEditRow = (rowIndex: number) => {
     const row = train.TimetableRows[rowIndex];
     if (row) {
-      // Detect time format and create appropriate settings
-      const createTimeSettings = (
-        timeValue: string | undefined
-      ): { value: string | undefined; settings: TimeDisplaySettings | undefined } => {
-        if (!timeValue) return { value: undefined, settings: undefined };
-
-        const formatType = detectTimeFormatType(timeValue);
-
-        if (formatType === 'full') {
-          // HH:MM:SS format - use as normal time
-          return { value: timeValue, settings: undefined };
-        } else if (formatType === 'hhmm') {
-          // HH:MM: format - normalize to HH:MM:00 and show only time (not hours will be hidden in display)
-          const normalizedValue = normalizeTimeFormat(timeValue);
-          return {
-            value: normalizedValue,
-            settings: undefined, // Will be treated as normal time
-          };
-        } else {
-          // Invalid format - move to customText
-          return {
-            value: undefined,
-            settings: {
-              showTime: false,
-              showHours: true,
-              showArrowForPass: timeValue === '↓',
-              customText: timeValue,
-            },
-          };
-        }
-      };
-
-      const arriveData = createTimeSettings(row.Arrive);
-      const departureData = createTimeSettings(row.Departure);
-
-      // Update row values if they were normalized
-      const updatedRow = { ...row };
-      if (arriveData.value !== row.Arrive) {
-        updatedRow.Arrive = arriveData.value;
-      }
-      if (departureData.value !== row.Departure) {
-        updatedRow.Departure = departureData.value;
-      }
-
       setEditingRow({
         rowIndex,
-        row: updatedRow,
-        arriveSettings: arriveData.settings,
-        departureSettings: departureData.settings,
+        row,
+        arriveSettings: row.arriveSettings,
+        departureSettings: row.departureSettings,
       });
       setEditRowDialogOpen(true);
       setEditTabIndex(0);
@@ -234,14 +198,14 @@ export function TimetableGrid({
       headerName: 'Arrive',
       width: 100,
       editable: true,
-      renderCell: (params) => params.value || '—',
+      renderCell: (params) => (params.value !== undefined && params.value !== null ? secondsToTimeString(params.value as number) : '—'),
     },
     {
       field: 'Departure',
       headerName: 'Departure',
       width: 100,
       editable: true,
-      renderCell: (params) => params.value || '—',
+      renderCell: (params) => (params.value !== undefined && params.value !== null ? secondsToTimeString(params.value as number) : '—'),
     },
     {
       field: 'TrackName',
@@ -649,9 +613,19 @@ export function TimetableGrid({
           <Button
             onClick={() => {
               if (editingRow) {
-                // Prepare row with display settings
-                const rowToSave = {
+                // Prepare row with display settings, convert time strings back to seconds
+                const rowToSave: TimetableRowWithSettings = {
                   ...editingRow.row,
+                  Arrive: editingRow.row.Arrive
+                    ? typeof editingRow.row.Arrive === 'string'
+                      ? timeStringToSeconds(editingRow.row.Arrive)
+                      : editingRow.row.Arrive
+                    : undefined,
+                  Departure: editingRow.row.Departure
+                    ? typeof editingRow.row.Departure === 'string'
+                      ? timeStringToSeconds(editingRow.row.Departure)
+                      : editingRow.row.Departure
+                    : undefined,
                   arriveSettings: editingRow.arriveSettings,
                   departureSettings: editingRow.departureSettings,
                 };
