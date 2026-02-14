@@ -40,7 +40,7 @@ export interface TimetableRow {
 export interface Train {
   Id?: string;
   TrainNumber: string;
-  MaxSpeed?: number | string;
+  MaxSpeed?: string;
   SpeedType?: string;
   NominalTractiveCapacity?: string;
   CarCount?: number;
