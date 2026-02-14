@@ -1,52 +1,298 @@
-import type { Database } from '../types/trvis';
+import type { Database, Train, TimetableRow, Work, WorkGroup } from '../types/trvis';
+
+/**
+ * Validation error information
+ */
+interface ValidationError {
+  path: string;
+  message: string;
+}
+
+const validationErrors: ValidationError[] = [];
+
+function addError(path: string, message: string): void {
+  validationErrors.push({ path, message });
+}
+
+function clearErrors(): void {
+  validationErrors.length = 0;
+}
+
+function getErrors(): ValidationError[] {
+  return [...validationErrors];
+}
+
+/**
+ * Validate string constraints
+ */
+function validateString(value: unknown, minLength?: number, maxLength?: number): boolean {
+  if (typeof value !== 'string') return false;
+  if (minLength !== undefined && value.length < minLength) return false;
+  if (maxLength !== undefined && value.length > maxLength) return false;
+  return true;
+}
+
+/**
+ * Validate number constraints
+ */
+function validateNumber(value: unknown, min?: number, max?: number): boolean {
+  if (typeof value !== 'number' || isNaN(value)) return false;
+  if (min !== undefined && value < min) return false;
+  if (max !== undefined && value > max) return false;
+  return true;
+}
+
+/**
+ * Validate hex color code (6-digit format: 000000-FFFFFF)
+ */
+function validateHexColor(value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  return /^[0-9a-fA-F]{6}$/.test(value);
+}
+
+/**
+ * Validate TimetableRow
+ */
+function isValidTimetableRow(row: unknown, path: string): row is TimetableRow {
+  if (typeof row !== 'object' || row === null) {
+    addError(path, 'TimetableRow must be an object');
+    return false;
+  }
+
+  const r = row as Record<string, unknown>;
+  let isValid = true;
+
+  // Required fields
+  if (!validateString(r.StationName, 1)) {
+    addError(`${path}.StationName`, 'StationName is required and must be a non-empty string');
+    isValid = false;
+  }
+
+  if (!validateNumber(r.Location_m)) {
+    addError(`${path}.Location_m`, 'Location_m is required and must be a number');
+    isValid = false;
+  }
+
+  // Optional fields with constraints
+  if (r.Longitude_deg !== undefined && !validateNumber(r.Longitude_deg, -180, 180)) {
+    addError(`${path}.Longitude_deg`, 'Longitude_deg must be a number between -180 and 180');
+    isValid = false;
+  }
+
+  if (r.Latitude_deg !== undefined && !validateNumber(r.Latitude_deg, -90, 90)) {
+    addError(`${path}.Latitude_deg`, 'Latitude_deg must be a number between -90 and 90');
+    isValid = false;
+  }
+
+  if (r.OnStationDetectRadius_m !== undefined && !validateNumber(r.OnStationDetectRadius_m, 0)) {
+    addError(`${path}.OnStationDetectRadius_m`, 'OnStationDetectRadius_m must be a positive number');
+    isValid = false;
+  }
+
+  if (r.DriveTime_MM !== undefined && !validateNumber(r.DriveTime_MM, 0, 99)) {
+    addError(`${path}.DriveTime_MM`, 'DriveTime_MM must be a number between 0 and 99');
+    isValid = false;
+  }
+
+  if (r.DriveTime_SS !== undefined && !validateNumber(r.DriveTime_SS, 0, 59)) {
+    addError(`${path}.DriveTime_SS`, 'DriveTime_SS must be a number between 0 and 59');
+    isValid = false;
+  }
+
+  if (r.RunInLimit !== undefined && !validateNumber(r.RunInLimit, 0, 999)) {
+    addError(`${path}.RunInLimit`, 'RunInLimit must be a number between 0 and 999');
+    isValid = false;
+  }
+
+  if (r.RunOutLimit !== undefined && !validateNumber(r.RunOutLimit, 0, 999)) {
+    addError(`${path}.RunOutLimit`, 'RunOutLimit must be a number between 0 and 999');
+    isValid = false;
+  }
+
+  if (r.MarkerColor !== undefined && !validateHexColor(r.MarkerColor)) {
+    addError(`${path}.MarkerColor`, 'MarkerColor must be a 6-digit hex color code');
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+/**
+ * Validate Train
+ */
+function isValidTrain(train: unknown, path: string): train is Train {
+  if (typeof train !== 'object' || train === null) {
+    addError(path, 'Train must be an object');
+    return false;
+  }
+
+  const t = train as Record<string, unknown>;
+  let isValid = true;
+
+  // Required fields
+  if (!validateString(t.TrainNumber, 1)) {
+    addError(`${path}.TrainNumber`, 'TrainNumber is required and must be a non-empty string');
+    isValid = false;
+  }
+
+  if (typeof t.Direction !== 'number' || isNaN(t.Direction)) {
+    addError(`${path}.Direction`, 'Direction is required and must be a number');
+    isValid = false;
+  }
+
+  if (!Array.isArray(t.TimetableRows)) {
+    addError(`${path}.TimetableRows`, 'TimetableRows is required and must be an array');
+    isValid = false;
+  } else {
+    // Validate each TimetableRow
+    (t.TimetableRows as unknown[]).forEach((row, index) => {
+      if (!isValidTimetableRow(row, `${path}.TimetableRows[${index}]`)) {
+        isValid = false;
+      }
+    });
+  }
+
+  // Optional fields with constraints
+  if (t.MaxSpeed !== undefined && !validateString(t.MaxSpeed)) {
+    addError(`${path}.MaxSpeed`, 'MaxSpeed must be a string');
+    isValid = false;
+  }
+
+  if (t.SpeedType !== undefined && !validateString(t.SpeedType)) {
+    addError(`${path}.SpeedType`, 'SpeedType must be a string');
+    isValid = false;
+  }
+
+  if (t.NominalTractiveCapacity !== undefined && !validateString(t.NominalTractiveCapacity)) {
+    addError(`${path}.NominalTractiveCapacity`, 'NominalTractiveCapacity must be a string');
+    isValid = false;
+  }
+
+  if (t.CarCount !== undefined && !validateNumber(t.CarCount, 1)) {
+    addError(`${path}.CarCount`, 'CarCount must be a number >= 1');
+    isValid = false;
+  }
+
+  if (t.DayCount !== undefined && !validateNumber(t.DayCount, 0)) {
+    addError(`${path}.DayCount`, 'DayCount must be a non-negative number');
+    isValid = false;
+  }
+
+  if (t.Color !== undefined && !validateHexColor(t.Color)) {
+    addError(`${path}.Color`, 'Color must be a 6-digit hex color code');
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+/**
+ * Validate Work
+ */
+function isValidWork(work: unknown, path: string): work is Work {
+  if (typeof work !== 'object' || work === null) {
+    addError(path, 'Work must be an object');
+    return false;
+  }
+
+  const w = work as Record<string, unknown>;
+  let isValid = true;
+
+  // Required fields
+  if (!validateString(w.Name, 1)) {
+    addError(`${path}.Name`, 'Name is required and must be a non-empty string');
+    isValid = false;
+  }
+
+  if (!validateString(w.AffectDate, 1)) {
+    addError(`${path}.AffectDate`, 'AffectDate is required and must be a non-empty string');
+    isValid = false;
+  }
+
+  if (!Array.isArray(w.Trains)) {
+    addError(`${path}.Trains`, 'Trains is required and must be an array');
+    isValid = false;
+  } else {
+    // Validate each Train
+    (w.Trains as unknown[]).forEach((train, index) => {
+      if (!isValidTrain(train, `${path}.Trains[${index}]`)) {
+        isValid = false;
+      }
+    });
+  }
+
+  return isValid;
+}
+
+/**
+ * Validate WorkGroup
+ */
+function isValidWorkGroup(workGroup: unknown, path: string): workGroup is WorkGroup {
+  if (typeof workGroup !== 'object' || workGroup === null) {
+    addError(path, 'WorkGroup must be an object');
+    return false;
+  }
+
+  const wg = workGroup as Record<string, unknown>;
+  let isValid = true;
+
+  // Required fields
+  if (!validateString(wg.Name, 1)) {
+    addError(`${path}.Name`, 'Name is required and must be a non-empty string');
+    isValid = false;
+  }
+
+  if (!Array.isArray(wg.Works)) {
+    addError(`${path}.Works`, 'Works is required and must be an array');
+    isValid = false;
+  } else {
+    // Validate each Work
+    (wg.Works as unknown[]).forEach((work, index) => {
+      if (!isValidWork(work, `${path}.Works[${index}]`)) {
+        isValid = false;
+      }
+    });
+  }
+
+  // Optional fields
+  if (wg.DBVersion !== undefined && !validateNumber(wg.DBVersion, 0)) {
+    addError(`${path}.DBVersion`, 'DBVersion must be a non-negative number');
+    isValid = false;
+  }
+
+  return isValid;
+}
 
 /**
  * Validate if a parsed object matches the TRViS Database schema
  */
 export function isValidDatabase(data: unknown): data is Database {
-  if (!Array.isArray(data)) return false;
+  clearErrors();
 
-  return data.every((workGroup) => {
-    if (typeof workGroup !== 'object' || workGroup === null) return false;
+  if (!Array.isArray(data)) {
+    addError('root', 'Database must be an array');
+    return false;
+  }
 
-    const wg = workGroup as Record<string, unknown>;
+  if (data.length === 0) {
+    return true;
+  }
 
-    // Required fields
-    if (typeof wg.Name !== 'string') return false;
-    if (!Array.isArray(wg.Works)) return false;
-
-    // Validate Works
-    return (wg.Works as unknown[]).every((work) => {
-      if (typeof work !== 'object' || work === null) return false;
-      const w = work as Record<string, unknown>;
-
-      if (typeof w.Name !== 'string') return false;
-      if (typeof w.AffectDate !== 'string') return false;
-      if (!Array.isArray(w.Trains)) return false;
-
-      // Validate Trains
-      return (w.Trains as unknown[]).every((train) => {
-        if (typeof train !== 'object' || train === null) return false;
-        const t = train as Record<string, unknown>;
-
-        if (typeof t.TrainNumber !== 'string') return false;
-        if (typeof t.Direction !== 'number' || (t.Direction !== 1 && t.Direction !== -1))
-          return false;
-        if (!Array.isArray(t.TimetableRows)) return false;
-
-        // Validate TimetableRows
-        return (t.TimetableRows as unknown[]).every((row) => {
-          if (typeof row !== 'object' || row === null) return false;
-          const r = row as Record<string, unknown>;
-
-          if (typeof r.StationName !== 'string') return false;
-          if (typeof r.Location_m !== 'number') return false;
-
-          return true;
-        });
-      });
-    });
+  let isValid = true;
+  data.forEach((workGroup, index) => {
+    if (!isValidWorkGroup(workGroup, `Database[${index}]`)) {
+      isValid = false;
+    }
   });
+
+  return isValid;
+}
+
+/**
+ * Get validation errors from last validation
+ */
+export function getValidationErrors(): ValidationError[] {
+  return getErrors();
 }
 
 /**
@@ -57,9 +303,11 @@ export function parseDatabase(jsonString: string): { data: Database; error: null
     const parsed = JSON.parse(jsonString);
 
     if (!isValidDatabase(parsed)) {
+      const errors = getValidationErrors();
+      const errorMessages = errors.map(e => `${e.path}: ${e.message}`).join('\n');
       return {
         data: null,
-        error: 'Invalid TRViS database format. Please check the JSON structure.',
+        error: `Invalid TRViS database format:\n${errorMessages}`,
       };
     }
 

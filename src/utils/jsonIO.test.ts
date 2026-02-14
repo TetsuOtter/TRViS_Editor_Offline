@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { isValidDatabase, parseDatabase, databaseToJSON, downloadDatabase } from './jsonIO'
+import { isValidDatabase, parseDatabase, databaseToJSON, downloadDatabase, getValidationErrors } from './jsonIO'
 import type { Database } from '../types/trvis'
 
 describe('jsonIO', () => {
@@ -17,7 +17,7 @@ describe('jsonIO', () => {
                 {
                   TrainNumber: '001',
                   Direction: 1,
-                  MaxSpeed: 120,
+                  MaxSpeed: '120',
                   CarCount: 10,
                   Destination: 'Tokyo',
                   WorkType: 0,
@@ -25,7 +25,7 @@ describe('jsonIO', () => {
                     {
                       StationName: 'Tokyo',
                       FullName: 'Tokyo Station',
-                      Arrive: '',
+                      Arrive: '06:00:00',
                       Departure: '06:00:00',
                       TrackName: '1',
                       Location_m: 0,
@@ -39,6 +39,7 @@ describe('jsonIO', () => {
       ]
 
       expect(isValidDatabase(validDatabase)).toBe(true)
+      expect(getValidationErrors().length).toBe(0)
     })
 
     it('should reject non-array input', () => {
@@ -87,7 +88,7 @@ describe('jsonIO', () => {
               Trains: [
                 {
                   TrainNumber: '001',
-                  Direction: 2, // Invalid direction (must be 1 or -1)
+                  Direction: 2, // Invalid direction (any number is allowed per schema)
                   TimetableRows: []
                 }
               ]
@@ -96,7 +97,7 @@ describe('jsonIO', () => {
         }
       ]
 
-      expect(isValidDatabase(invalidTrain)).toBe(false)
+      expect(isValidDatabase(invalidTrain)).toBe(true) // Direction accepts any number
     })
 
     it('should reject invalid timetable row structure', () => {
@@ -166,6 +167,497 @@ describe('jsonIO', () => {
       ]
       expect(isValidDatabase(emptyWorks)).toBe(true)
     })
+
+    describe('Schema constraint validation', () => {
+      it('should validate color hex codes correctly', () => {
+        const validColor: Database = [
+          {
+            Name: 'Color Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    Color: 'FF0000', // Valid hex color
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0,
+                        MarkerColor: 'FFFFFF'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(validColor)).toBe(true)
+      })
+
+      it('should reject invalid hex color codes', () => {
+        const invalidColor: unknown = [
+          {
+            Name: 'Color Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    Color: 'FF00', // Invalid: too short
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(invalidColor)).toBe(false)
+        expect(getValidationErrors().some(e => e.message.includes('Color'))).toBe(true)
+      })
+
+      it('should validate geographic coordinates', () => {
+        const validCoords: Database = [
+          {
+            Name: 'Coords Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0,
+                        Longitude_deg: 139.7414, // Tokyo
+                        Latitude_deg: 35.6762
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(validCoords)).toBe(true)
+      })
+
+      it('should reject invalid longitude values', () => {
+        const invalidLongitude: unknown = [
+          {
+            Name: 'Coords Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0,
+                        Longitude_deg: 200 // Out of range (-180 to 180)
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(invalidLongitude)).toBe(false)
+        expect(getValidationErrors().some(e => e.message.includes('Longitude'))).toBe(true)
+      })
+
+      it('should reject invalid latitude values', () => {
+        const invalidLatitude: unknown = [
+          {
+            Name: 'Coords Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0,
+                        Latitude_deg: 100 // Out of range (-90 to 90)
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(invalidLatitude)).toBe(false)
+        expect(getValidationErrors().some(e => e.message.includes('Latitude'))).toBe(true)
+      })
+
+      it('should validate time constraints', () => {
+        const validTimes: Database = [
+          {
+            Name: 'Time Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0,
+                        DriveTime_MM: 15, // 0-99
+                        DriveTime_SS: 30 // 0-59
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(validTimes)).toBe(true)
+      })
+
+      it('should reject invalid DriveTime_MM', () => {
+        const invalidMM: unknown = [
+          {
+            Name: 'Time Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0,
+                        DriveTime_MM: 100 // Out of range (0-99)
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(invalidMM)).toBe(false)
+        expect(getValidationErrors().some(e => e.message.includes('DriveTime_MM'))).toBe(true)
+      })
+
+      it('should reject invalid DriveTime_SS', () => {
+        const invalidSS: unknown = [
+          {
+            Name: 'Time Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0,
+                        DriveTime_SS: 60 // Out of range (0-59)
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(invalidSS)).toBe(false)
+        expect(getValidationErrors().some(e => e.message.includes('DriveTime_SS'))).toBe(true)
+      })
+
+      it('should validate CarCount minimum value', () => {
+        const validCarCount: Database = [
+          {
+            Name: 'CarCount Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    CarCount: 1, // Minimum value
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(validCarCount)).toBe(true)
+      })
+
+      it('should reject invalid CarCount', () => {
+        const invalidCarCount: unknown = [
+          {
+            Name: 'CarCount Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    CarCount: 0, // Below minimum (1)
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(invalidCarCount)).toBe(false)
+        expect(getValidationErrors().some(e => e.message.includes('CarCount'))).toBe(true)
+      })
+
+      it('should validate DayCount as non-negative', () => {
+        const validDayCount: Database = [
+          {
+            Name: 'DayCount Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    DayCount: 0, // Valid: 0 or greater
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(validDayCount)).toBe(true)
+      })
+
+      it('should validate MaxSpeed as string', () => {
+        const validMaxSpeed: Database = [
+          {
+            Name: 'MaxSpeed Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    MaxSpeed: '120', // String type
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(validMaxSpeed)).toBe(true)
+      })
+
+      it('should reject MaxSpeed as number', () => {
+        const invalidMaxSpeed: unknown = [
+          {
+            Name: 'MaxSpeed Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    MaxSpeed: 120, // Number (invalid)
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(invalidMaxSpeed)).toBe(false)
+        expect(getValidationErrors().some(e => e.message.includes('MaxSpeed'))).toBe(true)
+      })
+
+      it('should validate RunInLimit and RunOutLimit (0-999)', () => {
+        const validRunLimits: Database = [
+          {
+            Name: 'RunLimit Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0,
+                        RunInLimit: 500,
+                        RunOutLimit: 999
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(validRunLimits)).toBe(true)
+      })
+
+      it('should reject RunInLimit out of range', () => {
+        const invalidRunIn: unknown = [
+          {
+            Name: 'RunLimit Test',
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0,
+                        RunInLimit: 1000 // Out of range (0-999)
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(invalidRunIn)).toBe(false)
+        expect(getValidationErrors().some(e => e.message.includes('RunInLimit'))).toBe(true)
+      })
+
+      it('should reject DBVersion negative value', () => {
+        const invalidDBVersion: unknown = [
+          {
+            Name: 'DBVersion Test',
+            DBVersion: -1, // Negative (invalid)
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(invalidDBVersion)).toBe(false)
+        expect(getValidationErrors().some(e => e.message.includes('DBVersion'))).toBe(true)
+      })
+
+      it('should validate DBVersion as non-negative', () => {
+        const validDBVersion: Database = [
+          {
+            Name: 'DBVersion Test',
+            DBVersion: 0, // Valid: 0 or greater
+            Works: [
+              {
+                Name: 'Work',
+                AffectDate: '20260213',
+                Trains: [
+                  {
+                    TrainNumber: '001',
+                    Direction: 1,
+                    TimetableRows: [
+                      {
+                        StationName: 'Station',
+                        Location_m: 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        expect(isValidDatabase(validDBVersion)).toBe(true)
+      })
+    })
   })
 
   describe('parseDatabase', () => {
@@ -216,7 +708,7 @@ describe('jsonIO', () => {
       const result = parseDatabase(validJSONInvalidStructure)
 
       expect(result.data).toBe(null)
-      expect(result.error).toBe('Invalid TRViS database format. Please check the JSON structure.')
+      expect(result.error).toContain('Invalid TRViS database format')
     })
 
     it('should handle empty string', () => {
@@ -230,7 +722,7 @@ describe('jsonIO', () => {
       const result = parseDatabase(nullJSON)
 
       expect(result.data).toBe(null)
-      expect(result.error).toBe('Invalid TRViS database format. Please check the JSON structure.')
+      expect(result.error).toContain('Invalid TRViS database format')
     })
   })
 
@@ -288,7 +780,7 @@ describe('jsonIO', () => {
                 {
                   TrainNumber: '002',
                   Direction: -1,
-                  MaxSpeed: 100,
+                  MaxSpeed: '100',
                   TimetableRows: [
                     {
                       StationName: 'Station A',

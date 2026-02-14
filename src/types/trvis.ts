@@ -13,8 +13,8 @@ export interface TimetableRow {
   OnStationDetectRadius_m?: number;
   DriveTime_MM?: number;
   DriveTime_SS?: number;
-  Arrive?: string | null;
-  Departure?: string | null;
+  Arrive?: string;
+  Departure?: string;
   TrackName?: string;
   IsOperationOnlyStop?: boolean;
   IsPass?: boolean;
@@ -32,12 +32,12 @@ export interface TimetableRow {
 export interface Train {
   Id?: string;
   TrainNumber: string;
-  MaxSpeed?: number;
-  SpeedType?: string | number;
-  NominalTractiveCapacity?: string | number;
+  MaxSpeed?: string;
+  SpeedType?: string;
+  NominalTractiveCapacity?: string;
   CarCount?: number;
   Destination?: string;
-  Direction: 1 | -1;
+  Direction: number;
   WorkType?: number;
   DayCount?: number;
   IsRideOnMoving?: boolean;
