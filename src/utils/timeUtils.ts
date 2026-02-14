@@ -75,3 +75,60 @@ export function parseTimeComponents(time: string | null | undefined): TimeCompon
     seconds: totalSeconds % 60,
   };
 }
+
+/**
+ * Check if a string is in valid time format (HH:MM:SS, HH:MM:, or :MM:)
+ */
+export function isValidTimeFormat(time: string | null | undefined): boolean {
+  if (!time) return false;
+  // Match HH:MM:SS, HH:MM:, or :MM: format
+  return /^(\d{1,2}):(\d{2}):(\d{2})$/.test(time) || /^(\d{1,2}):(\d{2}):$/.test(time) || /^:(\d{2}):$/.test(time);
+}
+
+/**
+ * Detect the time format type
+ * Returns:
+ * - 'full': HH:MM:SS format
+ * - 'hhmm': HH:MM: format (without seconds)
+ * - 'mm-only': :MM: format (minutes only)
+ * - 'invalid': non-time format
+ */
+export function detectTimeFormatType(time: string | null | undefined): 'full' | 'hhmm' | 'mm-only' | 'invalid' {
+  if (!time) return 'invalid';
+
+  if (/^(\d{1,2}):(\d{2}):(\d{2})$/.test(time)) {
+    return 'full';
+  }
+
+  if (/^(\d{1,2}):(\d{2}):$/.test(time)) {
+    return 'hhmm';
+  }
+
+  if (/^:(\d{2}):$/.test(time)) {
+    return 'mm-only';
+  }
+
+  return 'invalid';
+}
+
+/**
+ * Normalize time format by adding missing seconds
+ * HH:MM: -> HH:MM:00
+ */
+export function normalizeTimeFormat(time: string | null | undefined): string | undefined {
+  if (!time) return undefined;
+
+  const formatType = detectTimeFormatType(time);
+
+  if (formatType === 'hhmm') {
+    // Convert HH:MM: to HH:MM:00
+    return `${time}00`;
+  }
+
+  if (formatType === 'full') {
+    return time;
+  }
+
+  // For other formats (mm-only, invalid), return as-is
+  return time;
+}

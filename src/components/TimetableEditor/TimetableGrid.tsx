@@ -11,6 +11,10 @@ import {
   Tooltip,
   Tabs,
   Tab,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import {
   DataGrid,
@@ -27,10 +31,13 @@ import AddIcon from '@mui/icons-material/Add';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import EditIcon from '@mui/icons-material/Edit';
 import { useDataStore } from '../../store/dataStore';
+import { useProjectStore } from '../../store/projectStore';
 import { createDefaultTRViSConfiguration } from '../../types/trvisconfiguration';
 import { FormField } from '../FormFields/TRViSFormFields';
+import { TimeInputField } from '../FormFields/TimeInputField';
 import type { TimetableRow } from '../../types/trvis';
-import { adjustTime } from '../../utils/timeUtils';
+import type { TimeDisplaySettings } from '../../types/editor';
+import { adjustTime, detectTimeFormatType, normalizeTimeFormat } from '../../utils/timeUtils';
 import { v4 as uuidv4 } from 'uuid';
 
 interface TimetableGridProps {
@@ -48,6 +55,8 @@ interface TimeAdjustment {
 interface EditingRow {
   rowIndex: number;
   row: TimetableRow;
+  arriveSettings?: TimeDisplaySettings;
+  departureSettings?: TimeDisplaySettings;
 }
 
 export function TimetableGrid({
@@ -60,7 +69,13 @@ export function TimetableGrid({
   const addTimetableRow = useDataStore((state) => state.addTimetableRow);
   const deleteTimetableRow = useDataStore((state) => state.deleteTimetableRow);
 
+  const activeProjectId = useProjectStore((state) => state.activeProjectId);
+  const getProjectData = useProjectStore((state) => state.getProjectData);
+
   const train = getTrain(workGroupIndex, workIndex, trainIndex);
+  const projectData = activeProjectId ? getProjectData(activeProjectId) : null;
+  const stations = projectData?.metadata.stations || [];
+
   const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
   const [timeAdjust, setTimeAdjust] = useState<TimeAdjustment>({
     open: false,
@@ -139,7 +154,56 @@ export function TimetableGrid({
   const handleEditRow = (rowIndex: number) => {
     const row = train.TimetableRows[rowIndex];
     if (row) {
-      setEditingRow({ rowIndex, row: { ...row } });
+      // Detect time format and create appropriate settings
+      const createTimeSettings = (
+        timeValue: string | undefined
+      ): { value: string | undefined; settings: TimeDisplaySettings | undefined } => {
+        if (!timeValue) return { value: undefined, settings: undefined };
+
+        const formatType = detectTimeFormatType(timeValue);
+
+        if (formatType === 'full') {
+          // HH:MM:SS format - use as normal time
+          return { value: timeValue, settings: undefined };
+        } else if (formatType === 'hhmm') {
+          // HH:MM: format - normalize to HH:MM:00 and show only time (not hours will be hidden in display)
+          const normalizedValue = normalizeTimeFormat(timeValue);
+          return {
+            value: normalizedValue,
+            settings: undefined, // Will be treated as normal time
+          };
+        } else {
+          // Invalid format - move to customText
+          return {
+            value: undefined,
+            settings: {
+              showTime: false,
+              showHours: true,
+              showArrowForPass: timeValue === '↓',
+              customText: timeValue,
+            },
+          };
+        }
+      };
+
+      const arriveData = createTimeSettings(row.Arrive);
+      const departureData = createTimeSettings(row.Departure);
+
+      // Update row values if they were normalized
+      const updatedRow = { ...row };
+      if (arriveData.value !== row.Arrive) {
+        updatedRow.Arrive = arriveData.value;
+      }
+      if (departureData.value !== row.Departure) {
+        updatedRow.Departure = departureData.value;
+      }
+
+      setEditingRow({
+        rowIndex,
+        row: updatedRow,
+        arriveSettings: arriveData.settings,
+        departureSettings: departureData.settings,
+      });
       setEditRowDialogOpen(true);
       setEditTabIndex(0);
     }
@@ -280,39 +344,51 @@ export function TimetableGrid({
               <Box sx={{ mt: 2 }}>
                 {editTabIndex === 0 && (
                   <Stack spacing={2}>
-                    <FormField
-                      label="Station Name"
-                      value={editingRow.row.StationName}
-                      onChange={(value) =>
-                        setEditingRow({
-                          ...editingRow,
-                          row: { ...editingRow.row, StationName: value },
-                        })
-                      }
-                      config={rowConfig.stationName || { enabled: true, required: true, description: '' }}
-                    />
-                    <FormField
-                      label="Full Name"
-                      value={editingRow.row.FullName || ''}
-                      onChange={(value) =>
-                        setEditingRow({
-                          ...editingRow,
-                          row: { ...editingRow.row, FullName: value },
-                        })
-                      }
-                      config={rowConfig.fullName || { enabled: true, required: false, description: '' }}
-                    />
-                    <FormField
+                    <FormControl fullWidth>
+                      <InputLabel>Station</InputLabel>
+                      <Select
+                        value={editingRow.row.StationName}
+                        label="Station"
+                        onChange={(e) => {
+                          const stationName = e.target.value;
+                          const selectedStation = stations.find((s) => s.name === stationName);
+                          setEditingRow({
+                            ...editingRow,
+                            row: {
+                              ...editingRow.row,
+                              StationName: stationName,
+                              FullName: selectedStation?.fullName || editingRow.row.FullName,
+                              Longitude_deg: selectedStation?.longitude || editingRow.row.Longitude_deg,
+                              Latitude_deg: selectedStation?.latitude || editingRow.row.Latitude_deg,
+                            },
+                          });
+                        }}
+                      >
+                        <MenuItem value="">
+                          <em>Select station</em>
+                        </MenuItem>
+                        {stations.map((station) => (
+                          <MenuItem key={station.id} value={station.name}>
+                            {station.name}
+                            {station.fullName && ` (${station.fullName})`}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <TextField
                       label="Location (m)"
+                      type="number"
                       value={editingRow.row.Location_m}
-                      onChange={(value) =>
+                      onChange={(e) =>
                         setEditingRow({
                           ...editingRow,
-                          row: { ...editingRow.row, Location_m: value },
+                          row: {
+                            ...editingRow.row,
+                            Location_m: parseFloat(e.target.value) || 0,
+                          },
                         })
                       }
-                      type="number"
-                      config={rowConfig.location_m || { enabled: true, required: true, description: '', unit: 'm' }}
+                      fullWidth
                     />
                     <FormField
                       label="Track Name"
@@ -330,29 +406,41 @@ export function TimetableGrid({
 
                 {editTabIndex === 1 && (
                   <Stack spacing={2}>
-                    <FormField
+                    <TimeInputField
                       label="Arrive Time"
-                      value={editingRow.row.Arrive || ''}
-                      onChange={(value) =>
+                      timeValue={editingRow.row.Arrive}
+                      settings={editingRow.arriveSettings}
+                      onTimeChange={(value) =>
                         setEditingRow({
                           ...editingRow,
                           row: { ...editingRow.row, Arrive: value },
                         })
                       }
-                      type="time"
-                      config={rowConfig.arrive || { enabled: true, required: false, description: '', format: 'HH:MM:SS' }}
+                      onSettingsChange={(settings) =>
+                        setEditingRow({
+                          ...editingRow,
+                          arriveSettings: settings,
+                        })
+                      }
+                      isPassStation={editingRow.row.IsPass}
                     />
-                    <FormField
+                    <TimeInputField
                       label="Departure Time"
-                      value={editingRow.row.Departure || ''}
-                      onChange={(value) =>
+                      timeValue={editingRow.row.Departure}
+                      settings={editingRow.departureSettings}
+                      onTimeChange={(value) =>
                         setEditingRow({
                           ...editingRow,
                           row: { ...editingRow.row, Departure: value },
                         })
                       }
-                      type="time"
-                      config={rowConfig.departure || { enabled: true, required: false, description: '', format: 'HH:MM:SS' }}
+                      onSettingsChange={(settings) =>
+                        setEditingRow({
+                          ...editingRow,
+                          departureSettings: settings,
+                        })
+                      }
+                      isPassStation={editingRow.row.IsPass}
                     />
                     <FormField
                       label="Drive Time MM"
@@ -561,12 +649,18 @@ export function TimetableGrid({
           <Button
             onClick={() => {
               if (editingRow) {
+                // Prepare row with display settings
+                const rowToSave = {
+                  ...editingRow.row,
+                  arriveSettings: editingRow.arriveSettings,
+                  departureSettings: editingRow.departureSettings,
+                };
                 updateTimetableRow(
                   workGroupIndex,
                   workIndex,
                   trainIndex,
                   editingRow.rowIndex,
-                  editingRow.row
+                  rowToSave
                 );
                 setEditRowDialogOpen(false);
                 setEditingRow(null);

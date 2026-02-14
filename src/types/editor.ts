@@ -48,3 +48,24 @@ export interface Project {
   createdAt: number;
   lastModified: number;
 }
+
+/**
+ * Time display settings for TimetableRow Arrive/Departure times
+ * Stored separately from TimetableRow to allow flexible display options
+ */
+export interface TimeDisplaySettings {
+  showTime: boolean; // Whether to display time at all
+  showHours: boolean; // Whether to show HH part (if false, format as :MM:SS)
+  showArrowForPass: boolean; // Whether to show "↓" instead of time for pass stations
+  customText?: string; // Custom text to display instead of time (if set, this takes precedence)
+}
+
+/**
+ * Extended timetable row with display settings
+ * Combines TimetableRow with display configuration
+ */
+export interface TimetableRowWithSettings {
+  row: import('../types/trvis').TimetableRow;
+  arriveSettings?: TimeDisplaySettings;
+  departureSettings?: TimeDisplaySettings;
+}

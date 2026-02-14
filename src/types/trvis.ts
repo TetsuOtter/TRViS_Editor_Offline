@@ -3,6 +3,8 @@
  * Reference: https://github.com/TetsuOtter/TRViS.JsonModels/tree/main/schema
  */
 
+import type { TimeDisplaySettings } from './editor';
+
 export interface TimetableRow {
   Id?: string;
   StationName: string;
@@ -27,6 +29,9 @@ export interface TimetableRow {
   Remarks?: string;
   MarkerColor?: string;
   MarkerText?: string;
+  // Display settings for time fields (editor-specific, not part of TRViS JSON spec)
+  arriveSettings?: TimeDisplaySettings;
+  departureSettings?: TimeDisplaySettings;
 }
 
 export interface Train {
