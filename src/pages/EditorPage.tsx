@@ -8,6 +8,7 @@ import { JsonExport } from '../components/ImportExport/JsonExport';
 import { StationMaster } from '../components/LineManager/StationMaster';
 import { LineEditor } from '../components/LineManager/LineEditor';
 import { TrainTypePatternEditor } from '../components/LineManager/TrainTypePatternEditor';
+import { WorkGroupEditor } from '../components/WorkGroupEditor/WorkGroupEditor';
 
 function EditorPage() {
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
@@ -82,28 +83,20 @@ function EditorPage() {
 
               <CardContent>
                 {activeTab === 0 && (
-                  <Stack spacing={2}>
+                  <Stack spacing={3}>
+                    <Box>
+                      <Typography variant="h6" gutterBottom>
+                        Work Groups
+                      </Typography>
+                      <WorkGroupEditor />
+                    </Box>
+
                     <Box>
                       <Typography variant="h6" gutterBottom>
                         Export
                       </Typography>
                       <JsonExport />
                     </Box>
-
-                    {workGroups.length > 0 && (
-                      <Box>
-                        <Typography variant="h6" gutterBottom>
-                          WorkGroups ({workGroups.length})
-                        </Typography>
-                        <Stack spacing={1}>
-                          {workGroups.map((wg, i) => (
-                            <Typography key={i} variant="body2">
-                              {i + 1}. <strong>{wg.Name}</strong> ({wg.Works.length} works)
-                            </Typography>
-                          ))}
-                        </Stack>
-                      </Box>
-                    )}
                   </Stack>
                 )}
 

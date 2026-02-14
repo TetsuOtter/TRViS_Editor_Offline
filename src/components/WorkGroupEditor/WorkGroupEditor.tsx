@@ -19,12 +19,14 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Paper,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useDataStore } from '../../store/dataStore';
+import { TrainEditor } from '../TrainEditor/TrainEditor';
 import type { WorkGroup, Work } from '../../types/trvis';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -251,40 +253,57 @@ export function WorkGroupEditor() {
                     No works
                   </Typography>
                 ) : (
-                  <List>
+                  <Stack spacing={2}>
                     {wg.Works.map((work, workIndex) => (
-                      <ListItem
+                      <Accordion
                         key={work.Id || workIndex}
-                        secondaryAction={
-                          <Stack direction="row" spacing={0.5}>
-                            <Tooltip title="Edit Work">
-                              <IconButton
-                                edge="end"
-                                size="small"
-                                onClick={() => handleOpenEditWork(wgIndex, workIndex)}
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete Work">
-                              <IconButton
-                                edge="end"
-                                size="small"
-                                onClick={() => deleteWork(wgIndex, workIndex)}
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </Stack>
-                        }
+                        sx={{ border: '1px solid', borderColor: 'divider' }}
                       >
-                        <ListItemText
-                          primary={work.Name}
-                          secondary={`Affect Date: ${work.AffectDate} | Trains: ${work.Trains.length}`}
-                        />
-                      </ListItem>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                            <Box sx={{ flexGrow: 1 }}>
+                              <Typography variant="subtitle1">{work.Name}</Typography>
+                              <Typography variant="caption" color="textSecondary">
+                                Affect Date: {work.AffectDate} | Trains: {work.Trains.length}
+                              </Typography>
+                            </Box>
+                            <Stack direction="row" spacing={0.5}>
+                              <Tooltip title="Edit Work">
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenEditWork(wgIndex, workIndex);
+                                  }}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete Work">
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteWork(wgIndex, workIndex);
+                                  }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Paper variant="outlined" sx={{ p: 2 }}>
+                            <Typography variant="h6" gutterBottom>
+                              Trains
+                            </Typography>
+                            <TrainEditor workGroupIndex={wgIndex} workIndex={workIndex} />
+                          </Paper>
+                        </AccordionDetails>
+                      </Accordion>
                     ))}
-                  </List>
+                  </Stack>
                 )}
               </Stack>
             </AccordionDetails>
