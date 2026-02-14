@@ -1,12 +1,14 @@
 import { Button, Stack, Alert, Typography, Box } from '@mui/material';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { useProjectStore } from '../../store/projectStore';
+import { useDataStore } from '../../store/dataStore';
 import { useRef, useState } from 'react';
 import { isValidDatabase } from '../../utils/jsonIO';
 
 export function JsonImport() {
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
   const updateProjectData = useProjectStore((state) => state.updateProjectData);
+  const syncWithProject = useDataStore((state) => state.syncWithProject);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,7 +30,11 @@ export function JsonImport() {
       }
 
       // Update the active project with the imported data
-      updateProjectData(activeProjectId, data);
+      await updateProjectData(activeProjectId, data);
+
+      // Sync the imported data to DataStore to update the UI
+      syncWithProject(activeProjectId);
+
       setSuccess(`Successfully imported ${file.name}. Loaded ${data.length} work groups.`);
 
       // Reset file input
