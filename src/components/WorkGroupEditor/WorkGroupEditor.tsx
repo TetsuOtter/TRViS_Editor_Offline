@@ -60,7 +60,7 @@ export function WorkGroupEditor() {
   };
 
   const handleOpenEditWork = (workGroupIndex: number, workIndex?: number) => {
-    if (workIndex !== undefined) {
+    if (workIndex != null) {
       const work = workGroups[workGroupIndex]?.Works[workIndex];
       if (work) {
         setEditingWork({ workGroupIndex, workIndex, work: { ...work } });
@@ -79,11 +79,11 @@ export function WorkGroupEditor() {
     if (!editingWork.work.Name.trim()) {
       return;
     }
-    if (editingWork.work.AffectDate !== undefined && !editingWork.work.AffectDate.trim()) {
+    if (editingWork.work.AffectDate != null && !editingWork.work.AffectDate.trim()) {
       return;
     }
 
-    if (editingWork.workIndex !== undefined) {
+    if (editingWork.workIndex != null) {
       updateWork(editingWork.workGroupIndex, editingWork.workIndex, editingWork.work);
     } else {
       addWork(editingWork.workGroupIndex, {
@@ -131,7 +131,7 @@ export function WorkGroupEditor() {
       {/* Edit Work Dialog */}
       <Dialog open={editWorkDialogOpen} onClose={() => setEditWorkDialogOpen(false)} fullWidth>
         <DialogTitle>
-          {editingWork?.workIndex !== undefined ? 'Edit Work' : 'Create New Work'}
+          {editingWork?.workIndex != null ? 'Edit Work' : 'Create New Work'}
         </DialogTitle>
         <DialogContent>
           {editingWork && (

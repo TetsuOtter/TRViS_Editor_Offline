@@ -27,8 +27,8 @@ function getErrors(): ValidationError[] {
  */
 function validateString(value: unknown, minLength?: number, maxLength?: number): boolean {
   if (typeof value !== 'string') return false;
-  if (minLength !== undefined && value.length < minLength) return false;
-  if (maxLength !== undefined && value.length > maxLength) return false;
+  if (minLength != null && value.length < minLength) return false;
+  if (maxLength != null && value.length > maxLength) return false;
   return true;
 }
 
@@ -37,8 +37,8 @@ function validateString(value: unknown, minLength?: number, maxLength?: number):
  */
 function validateNumber(value: unknown, min?: number, max?: number): boolean {
   if (typeof value !== 'number' || isNaN(value)) return false;
-  if (min !== undefined && value < min) return false;
-  if (max !== undefined && value > max) return false;
+  if (min != null && value < min) return false;
+  if (max != null && value > max) return false;
   return true;
 }
 
@@ -74,42 +74,42 @@ function isValidTimetableRow(row: unknown, path: string): row is TimetableRow {
   }
 
   // Optional fields with constraints
-  if (r.Longitude_deg !== undefined && !validateNumber(r.Longitude_deg, -180, 180)) {
+  if (r.Longitude_deg != null && !validateNumber(r.Longitude_deg, -180, 180)) {
     addError(`${path}.Longitude_deg`, 'Longitude_deg must be a number between -180 and 180');
     isValid = false;
   }
 
-  if (r.Latitude_deg !== undefined && !validateNumber(r.Latitude_deg, -90, 90)) {
+  if (r.Latitude_deg != null && !validateNumber(r.Latitude_deg, -90, 90)) {
     addError(`${path}.Latitude_deg`, 'Latitude_deg must be a number between -90 and 90');
     isValid = false;
   }
 
-  if (r.OnStationDetectRadius_m !== undefined && !validateNumber(r.OnStationDetectRadius_m, 0)) {
+  if (r.OnStationDetectRadius_m != null && !validateNumber(r.OnStationDetectRadius_m, 0)) {
     addError(`${path}.OnStationDetectRadius_m`, 'OnStationDetectRadius_m must be a positive number');
     isValid = false;
   }
 
-  if (r.DriveTime_MM !== undefined && !validateNumber(r.DriveTime_MM, 0, 99)) {
+  if (r.DriveTime_MM != null && !validateNumber(r.DriveTime_MM, 0, 99)) {
     addError(`${path}.DriveTime_MM`, 'DriveTime_MM must be a number between 0 and 99');
     isValid = false;
   }
 
-  if (r.DriveTime_SS !== undefined && !validateNumber(r.DriveTime_SS, 0, 59)) {
+  if (r.DriveTime_SS != null && !validateNumber(r.DriveTime_SS, 0, 59)) {
     addError(`${path}.DriveTime_SS`, 'DriveTime_SS must be a number between 0 and 59');
     isValid = false;
   }
 
-  if (r.RunInLimit !== undefined && !validateNumber(r.RunInLimit, 0, 999)) {
+  if (r.RunInLimit != null && !validateNumber(r.RunInLimit, 0, 999)) {
     addError(`${path}.RunInLimit`, 'RunInLimit must be a number between 0 and 999');
     isValid = false;
   }
 
-  if (r.RunOutLimit !== undefined && !validateNumber(r.RunOutLimit, 0, 999)) {
+  if (r.RunOutLimit != null && !validateNumber(r.RunOutLimit, 0, 999)) {
     addError(`${path}.RunOutLimit`, 'RunOutLimit must be a number between 0 and 999');
     isValid = false;
   }
 
-  if (r.MarkerColor !== undefined && !validateHexColor(r.MarkerColor)) {
+  if (r.MarkerColor != null && !validateHexColor(r.MarkerColor)) {
     addError(`${path}.MarkerColor`, 'MarkerColor must be a 6-digit hex color code');
     isValid = false;
   }
@@ -153,32 +153,32 @@ function isValidTrain(train: unknown, path: string): train is Train {
   }
 
   // Optional fields with constraints
-  if (t.MaxSpeed !== undefined && !validateString(t.MaxSpeed)) {
+  if (t.MaxSpeed != null && !validateString(t.MaxSpeed)) {
     addError(`${path}.MaxSpeed`, 'MaxSpeed must be a string');
     isValid = false;
   }
 
-  if (t.SpeedType !== undefined && !validateString(t.SpeedType)) {
+  if (t.SpeedType != null && !validateString(t.SpeedType)) {
     addError(`${path}.SpeedType`, 'SpeedType must be a string');
     isValid = false;
   }
 
-  if (t.NominalTractiveCapacity !== undefined && !validateString(t.NominalTractiveCapacity)) {
+  if (t.NominalTractiveCapacity != null && !validateString(t.NominalTractiveCapacity)) {
     addError(`${path}.NominalTractiveCapacity`, 'NominalTractiveCapacity must be a string');
     isValid = false;
   }
 
-  if (t.CarCount !== undefined && !validateNumber(t.CarCount, 1)) {
+  if (t.CarCount != null && !validateNumber(t.CarCount, 1)) {
     addError(`${path}.CarCount`, 'CarCount must be a number >= 1');
     isValid = false;
   }
 
-  if (t.DayCount !== undefined && !validateNumber(t.DayCount, 0)) {
+  if (t.DayCount != null && !validateNumber(t.DayCount, 0)) {
     addError(`${path}.DayCount`, 'DayCount must be a non-negative number');
     isValid = false;
   }
 
-  if (t.Color !== undefined && !validateHexColor(t.Color)) {
+  if (t.Color != null && !validateHexColor(t.Color)) {
     addError(`${path}.Color`, 'Color must be a 6-digit hex color code');
     isValid = false;
   }
@@ -217,7 +217,7 @@ function isValidWork(work: unknown, path: string): work is Work {
   }
 
   // Optional fields with constraints
-  if (w.AffectDate !== undefined && !validateString(w.AffectDate, 1)) {
+  if (w.AffectDate != null && !validateString(w.AffectDate, 1)) {
     addError(`${path}.AffectDate`, 'AffectDate must be a non-empty string');
     isValid = false;
   }
@@ -256,7 +256,7 @@ function isValidWorkGroup(workGroup: unknown, path: string): workGroup is WorkGr
   }
 
   // Optional fields
-  if (wg.DBVersion !== undefined && !validateNumber(wg.DBVersion, 0)) {
+  if (wg.DBVersion != null && !validateNumber(wg.DBVersion, 0)) {
     addError(`${path}.DBVersion`, 'DBVersion must be a non-negative number');
     isValid = false;
   }

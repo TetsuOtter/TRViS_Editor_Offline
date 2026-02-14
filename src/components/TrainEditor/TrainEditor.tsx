@@ -70,7 +70,7 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
   }
 
   const handleOpenEditTrain = (trainIndex?: number) => {
-    if (trainIndex !== undefined) {
+    if (trainIndex != null) {
       const train = work.Trains[trainIndex];
       if (train) {
         setEditingTrain({ trainIndex, train: { ...train } });
@@ -93,7 +93,7 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
       return;
     }
 
-    if (editingTrain.trainIndex !== undefined) {
+    if (editingTrain.trainIndex != null) {
       updateTrain(workGroupIndex, workIndex, editingTrain.trainIndex, editingTrain.train);
     } else {
       addTrain(workGroupIndex, workIndex, {
@@ -144,7 +144,7 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
       {/* Edit Train Dialog */}
       <Dialog open={editTrainDialogOpen} onClose={() => setEditTrainDialogOpen(false)} fullWidth>
         <DialogTitle>
-          {editingTrain?.trainIndex !== undefined ? 'Edit Train' : 'Create New Train'}
+          {editingTrain?.trainIndex != null ? 'Edit Train' : 'Create New Train'}
         </DialogTitle>
         <DialogContent>
           {editingTrain && (

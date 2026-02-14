@@ -205,8 +205,8 @@ export function StationMaster() {
               <TableRow key={station.id}>
                 <TableCell>{station.name}</TableCell>
                 <TableCell>{station.fullName || '—'}</TableCell>
-                <TableCell>{station.longitude !== undefined ? station.longitude : '—'}</TableCell>
-                <TableCell>{station.latitude !== undefined ? station.latitude : '—'}</TableCell>
+                <TableCell>{station.longitude != null ? station.longitude : '—'}</TableCell>
+                <TableCell>{station.latitude != null ? station.latitude : '—'}</TableCell>
                 <TableCell align="right">
                   <Tooltip title="Edit Station">
                     <IconButton

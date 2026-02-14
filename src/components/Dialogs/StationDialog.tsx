@@ -141,10 +141,10 @@ export function StationDialog({ open, onClose }: StationDialogProps) {
                       <TableCell>{station.name}</TableCell>
                       <TableCell>{station.fullName || '-'}</TableCell>
                       <TableCell align="right">
-                        {station.longitude !== undefined ? station.longitude.toFixed(6) : '-'}
+                        {station.longitude != null ? station.longitude.toFixed(6) : '-'}
                       </TableCell>
                       <TableCell align="right">
-                        {station.latitude !== undefined ? station.latitude.toFixed(6) : '-'}
+                        {station.latitude != null ? station.latitude.toFixed(6) : '-'}
                       </TableCell>
                       <TableCell align="right">
                         <Tooltip title="Edit">
