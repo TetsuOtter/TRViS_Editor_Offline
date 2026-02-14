@@ -203,7 +203,7 @@ test.describe('Full Workflow: Station to JSON Export', () => {
     await page.waitForTimeout(1000);
 
     // Re-get main locator as the page has changed
-    let newMain = page.locator('main');
+    const newMain = page.locator('main');
 
     // Check if WorkGroup not found error is shown - retry with additional wait
     let errorShown = await newMain.getByText('WorkGroup not found').isVisible().catch(() => false);
@@ -216,7 +216,7 @@ test.describe('Full Workflow: Station to JSON Export', () => {
     await newMain.locator('h4').filter({ hasText: 'Works' }).waitFor({ state: 'visible', timeout: 15000 });
 
     // Create Work
-    let createWorkButton = newMain.getByRole('button', { name: 'Create Work' });
+    const createWorkButton = newMain.getByRole('button', { name: 'Create Work' });
     await createWorkButton.waitFor({ state: 'visible', timeout: 15000 });
     await createWorkButton.click();
     await page.getByLabel('Work Name').fill('Test Work');
@@ -289,7 +289,7 @@ test.describe('Full Workflow: Station to JSON Export', () => {
     await page.waitForTimeout(1000);
 
     // Re-get main locator as the page has changed
-    let lastMain = page.locator('main');
+    const lastMain = page.locator('main');
 
     // Check if WorkGroup not found error is shown - retry with additional wait
     let errorShown2 = await lastMain.getByText('WorkGroup not found').isVisible().catch(() => false);
@@ -302,7 +302,7 @@ test.describe('Full Workflow: Station to JSON Export', () => {
     await lastMain.locator('h4').filter({ hasText: 'Works' }).waitFor({ state: 'visible', timeout: 15000 });
 
     // Create Work
-    let createBtn = lastMain.getByRole('button', { name: 'Create Work' });
+    const createBtn = lastMain.getByRole('button', { name: 'Create Work' });
     await createBtn.waitFor({ state: 'visible', timeout: 15000 });
     await createBtn.click();
     await page.getByLabel('Work Name').fill('Original Work');

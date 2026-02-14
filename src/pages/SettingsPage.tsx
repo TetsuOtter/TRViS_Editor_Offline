@@ -4,8 +4,6 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { JsonImport } from '../components/ImportExport/JsonImport';
-import { AppLinkButton } from '../components/ImportExport/AppLinkButton';
 import { useTheme } from '../contexts/ThemeContext';
 
 function SettingsPage() {
@@ -99,31 +97,6 @@ function SettingsPage() {
                 <FormControlLabel value="system" control={<Radio />} label="System" />
               </RadioGroup>
             </FormControl>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Import JSON Timetable
-            </Typography>
-            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-              Import a TRViS-formatted JSON file to load timetable data into the active project.
-            </Typography>
-            <JsonImport />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              AppLink for TRViS App
-            </Typography>
-            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-              Generate an AppLink that can be shared with the TRViS app to load your timetable
-              data directly.
-            </Typography>
-            <AppLinkButton />
           </CardContent>
         </Card>
 

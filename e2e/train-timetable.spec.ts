@@ -92,8 +92,6 @@ test.describe('Train Timetable Management', () => {
   })
 
   test('should navigate between all pages', async ({ page }) => {
-    const main = page.locator('main')
-
     // This test suite already includes:
     // 1. should verify stations were created - tests Station dialog functionality
     // 2. should create a line with stations - tests Line dialog functionality

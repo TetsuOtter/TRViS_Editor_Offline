@@ -76,7 +76,7 @@ function AppContent() {
           >
             <MenuIcon />
           </IconButton>
-          <Button color="inherit" onClick={() => navigate('/')} sx={{ textTransform: 'none' }}>
+          <Button color="inherit" onClick={() => navigate('/')} sx={{ textTransform: 'none', flexGrow: 1 }}>
             <Typography variant="h6" sx={{ flexGrow: 1 }}>
               TRViS Editor {activeProject ? `- ${activeProject.name}` : ''}
             </Typography>

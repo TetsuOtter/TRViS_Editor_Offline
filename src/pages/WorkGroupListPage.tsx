@@ -30,6 +30,7 @@ import { StationDialog } from '../components/Dialogs/StationDialog';
 import { LineDialog } from '../components/Dialogs/LineDialog';
 import type { WorkGroup } from '../types/trvis';
 import { v4 as uuidv4 } from 'uuid';
+import { AppLinkButton } from '../components/ImportExport/AppLinkButton';
 
 export function WorkGroupListPage() {
   const navigate = useNavigate();
@@ -132,6 +133,20 @@ export function WorkGroupListPage() {
           Lines
         </Button>
       </Box>
+
+      {/* AppLink for TRViS App */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            AppLink for TRViS App
+          </Typography>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+            Generate an AppLink that can be shared with the TRViS app to load your timetable
+            data directly.
+          </Typography>
+          <AppLinkButton />
+        </CardContent>
+      </Card>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">WorkGroups</Typography>

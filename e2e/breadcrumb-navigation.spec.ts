@@ -159,7 +159,6 @@ test.describe('Breadcrumb Navigation', () => {
     await page.getByLabel('Project Name').fill('Persistence Test');
     await page.getByRole('button', { name: 'Create' }).click();
     await page.waitForURL(/\/project\/.*\/workgroups/);
-    const projectId = page.url().match(/\/project\/([^/]+)\//)?.[1];
     await page.waitForLoadState('networkidle');
 
     // Step 2: Create a WorkGroup
