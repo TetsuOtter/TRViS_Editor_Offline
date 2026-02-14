@@ -5,8 +5,8 @@
  * Current production implementation for offline-first functionality.
  */
 
-import { IDataRepository, Result, SyncStatus, RepositoryConfig } from '../types';
-import { ProjectData, StorageState } from '../../types/storage';
+import type { IDataRepository, Result, SyncStatus, RepositoryConfig } from '../types';
+import type { ProjectData, StorageState } from '../../types/storage';
 
 export class LocalStorageAdapter implements IDataRepository {
   private storageKey: string;

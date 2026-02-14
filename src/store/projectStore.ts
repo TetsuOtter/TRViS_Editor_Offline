@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { Project } from '../types/editor';
 import type { ProjectData } from '../types/storage';
 import type { Database } from '../types/trvis';
-import { IDataRepository } from '../data/types';
+import type { IDataRepository } from '../data/types';
 import { repositoryFactory } from '../data/RepositoryFactory';
 
 interface ProjectState {

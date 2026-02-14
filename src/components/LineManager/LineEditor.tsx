@@ -137,22 +137,149 @@ export function LineEditor() {
     return stations.find((s) => s.id === stationId)?.name || 'Unknown';
   };
 
+  const lineDialog = (
+    <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
+      <DialogTitle>
+        {editingLine?.lineId ? 'Edit Line' : 'Create New Line'}
+      </DialogTitle>
+      <DialogContent>
+        {editingLine && (
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Line Name"
+              value={editingLine.line.name}
+              onChange={(e) =>
+                setEditingLine({
+                  ...editingLine,
+                  line: { ...editingLine.line, name: e.target.value },
+                })
+              }
+            />
+
+            <Box sx={{ border: '1px solid #ddd', borderRadius: 1, p: 2 }}>
+              <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                Stations ({editingLine.line.stations.length})
+              </Typography>
+
+              {editingLine.line.stations.length > 0 && (
+                <TableContainer component={Paper} sx={{ mb: 2 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                        <TableCell sx={{ width: 40 }}>No.</TableCell>
+                        <TableCell sx={{ flex: 1 }}>Station</TableCell>
+                        <TableCell sx={{ width: 80 }}>Dist (m)</TableCell>
+                        <TableCell sx={{ width: 80 }} align="center">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {editingLine.line.stations.map((ls, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell>{idx + 1}</TableCell>
+                          <TableCell>{getStationName(ls.stationId)}</TableCell>
+                          <TableCell>{ls.distanceFromStart_m}</TableCell>
+                          <TableCell align="center">
+                            <Tooltip title="Move up">
+                              <IconButton
+                                size="small"
+                                disabled={idx === 0}
+                                onClick={() => handleMoveStation(idx, 'up')}
+                              >
+                                <KeyboardArrowUpIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Move down">
+                              <IconButton
+                                size="small"
+                                disabled={idx === editingLine.line.stations.length - 1}
+                                onClick={() => handleMoveStation(idx, 'down')}
+                              >
+                                <KeyboardArrowDownIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Remove">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleRemoveStationFromLine(idx)}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+
+              <Stack spacing={1}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Add Station"
+                  value={selectedStationId}
+                  onChange={(e) => setSelectedStationId(e.target.value)}
+                  size="small"
+                >
+                  {stations
+                    .filter((s) => !editingLine.line.stations.some((ls) => ls.stationId === s.id))
+                    .map((s) => (
+                      <MenuItem key={s.id} value={s.id}>
+                        {s.name}
+                      </MenuItem>
+                    ))}
+                </TextField>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Distance from Start (m)"
+                  value={selectedDistance}
+                  onChange={(e) => setSelectedDistance(parseFloat(e.target.value) || 0)}
+                  size="small"
+                />
+                <Button
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  onClick={handleAddStationToLine}
+                  disabled={!selectedStationId}
+                >
+                  Add Station
+                </Button>
+              </Stack>
+            </Box>
+          </Stack>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+        <Button onClick={handleSaveLine} variant="contained">
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
   if (lines.length === 0) {
     return (
-      <Card>
-        <CardContent sx={{ textAlign: 'center', py: 4 }}>
-          <Typography color="textSecondary" sx={{ mb: 2 }}>
-            No lines. Create one to get started.
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenEditLine()}
-          >
-            Create Line
-          </Button>
-        </CardContent>
-      </Card>
+      <>
+        <Card>
+          <CardContent sx={{ textAlign: 'center', py: 4 }}>
+            <Typography color="textSecondary" sx={{ mb: 2 }}>
+              No lines. Create one to get started.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenEditLine()}
+            >
+              Create Line
+            </Button>
+          </CardContent>
+        </Card>
+        {lineDialog}
+      </>
     );
   }
 
@@ -225,128 +352,7 @@ export function LineEditor() {
         ))}
       </Stack>
 
-      {/* Edit Line Dialog */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>
-          {editingLine?.lineId ? 'Edit Line' : 'Create New Line'}
-        </DialogTitle>
-        <DialogContent>
-          {editingLine && (
-            <Stack spacing={2} sx={{ mt: 2 }}>
-              <TextField
-                fullWidth
-                label="Line Name"
-                value={editingLine.line.name}
-                onChange={(e) =>
-                  setEditingLine({
-                    ...editingLine,
-                    line: { ...editingLine.line, name: e.target.value },
-                  })
-                }
-              />
-
-              <Box sx={{ border: '1px solid #ddd', borderRadius: 1, p: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                  Stations ({editingLine.line.stations.length})
-                </Typography>
-
-                {editingLine.line.stations.length > 0 && (
-                  <TableContainer component={Paper} sx={{ mb: 2 }}>
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                          <TableCell sx={{ width: 40 }}>No.</TableCell>
-                          <TableCell sx={{ flex: 1 }}>Station</TableCell>
-                          <TableCell sx={{ width: 80 }}>Dist (m)</TableCell>
-                          <TableCell sx={{ width: 80 }} align="center">Actions</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {editingLine.line.stations.map((ls, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell>{idx + 1}</TableCell>
-                            <TableCell>{getStationName(ls.stationId)}</TableCell>
-                            <TableCell>{ls.distanceFromStart_m}</TableCell>
-                            <TableCell align="center">
-                              <Tooltip title="Move up">
-                                <IconButton
-                                  size="small"
-                                  disabled={idx === 0}
-                                  onClick={() => handleMoveStation(idx, 'up')}
-                                >
-                                  <KeyboardArrowUpIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Move down">
-                                <IconButton
-                                  size="small"
-                                  disabled={idx === editingLine.line.stations.length - 1}
-                                  onClick={() => handleMoveStation(idx, 'down')}
-                                >
-                                  <KeyboardArrowDownIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Remove">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleRemoveStationFromLine(idx)}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                )}
-
-                <Stack spacing={1}>
-                  <TextField
-                    select
-                    fullWidth
-                    label="Add Station"
-                    value={selectedStationId}
-                    onChange={(e) => setSelectedStationId(e.target.value)}
-                    size="small"
-                  >
-                    {stations
-                      .filter((s) => !editingLine.line.stations.some((ls) => ls.stationId === s.id))
-                      .map((s) => (
-                        <MenuItem key={s.id} value={s.id}>
-                          {s.name}
-                        </MenuItem>
-                      ))}
-                  </TextField>
-                  <TextField
-                    fullWidth
-                    type="number"
-                    label="Distance from Start (m)"
-                    value={selectedDistance}
-                    onChange={(e) => setSelectedDistance(parseFloat(e.target.value) || 0)}
-                    size="small"
-                  />
-                  <Button
-                    variant="outlined"
-                    startIcon={<AddIcon />}
-                    onClick={handleAddStationToLine}
-                    disabled={!selectedStationId}
-                  >
-                    Add Station
-                  </Button>
-                </Stack>
-              </Box>
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleSaveLine} variant="contained">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {lineDialog}
     </Box>
   );
 }

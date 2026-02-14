@@ -82,22 +82,99 @@ export function StationMaster() {
     }
   };
 
+  const stationDialog = (
+    <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth>
+      <DialogTitle>
+        {editingStation?.stationId ? 'Edit Station' : 'Create New Station'}
+      </DialogTitle>
+      <DialogContent>
+        {editingStation && (
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Name"
+              value={editingStation.station.name}
+              onChange={(e) =>
+                setEditingStation({
+                  ...editingStation,
+                  station: { ...editingStation.station, name: e.target.value },
+                })
+              }
+            />
+            <TextField
+              fullWidth
+              label="Full Name"
+              value={editingStation.station.fullName || ''}
+              onChange={(e) =>
+                setEditingStation({
+                  ...editingStation,
+                  station: { ...editingStation.station, fullName: e.target.value },
+                })
+              }
+            />
+            <TextField
+              fullWidth
+              type="number"
+              label="Longitude"
+              inputProps={{ step: '0.000001' }}
+              value={editingStation.station.longitude ?? ''}
+              onChange={(e) =>
+                setEditingStation({
+                  ...editingStation,
+                  station: {
+                    ...editingStation.station,
+                    longitude: e.target.value ? parseFloat(e.target.value) : undefined,
+                  },
+                })
+              }
+            />
+            <TextField
+              fullWidth
+              type="number"
+              label="Latitude"
+              inputProps={{ step: '0.000001' }}
+              value={editingStation.station.latitude ?? ''}
+              onChange={(e) =>
+                setEditingStation({
+                  ...editingStation,
+                  station: {
+                    ...editingStation.station,
+                    latitude: e.target.value ? parseFloat(e.target.value) : undefined,
+                  },
+                })
+              }
+            />
+          </Stack>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+        <Button onClick={handleSaveStation} variant="contained">
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
   if (stations.length === 0) {
     return (
-      <Card>
-        <CardContent sx={{ textAlign: 'center', py: 4 }}>
-          <Typography color="textSecondary" sx={{ mb: 2 }}>
-            No stations. Create one to get started.
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenEditStation()}
-          >
-            Create Station
-          </Button>
-        </CardContent>
-      </Card>
+      <>
+        <Card>
+          <CardContent sx={{ textAlign: 'center', py: 4 }}>
+            <Typography color="textSecondary" sx={{ mb: 2 }}>
+              No stations. Create one to get started.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenEditStation()}
+            >
+              Create Station
+            </Button>
+          </CardContent>
+        </Card>
+        {stationDialog}
+      </>
     );
   }
 
@@ -154,78 +231,7 @@ export function StationMaster() {
         </Table>
       </TableContainer>
 
-      {/* Edit Station Dialog */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth>
-        <DialogTitle>
-          {editingStation?.stationId ? 'Edit Station' : 'Create New Station'}
-        </DialogTitle>
-        <DialogContent>
-          {editingStation && (
-            <Stack spacing={2} sx={{ mt: 2 }}>
-              <TextField
-                fullWidth
-                label="Name"
-                value={editingStation.station.name}
-                onChange={(e) =>
-                  setEditingStation({
-                    ...editingStation,
-                    station: { ...editingStation.station, name: e.target.value },
-                  })
-                }
-              />
-              <TextField
-                fullWidth
-                label="Full Name"
-                value={editingStation.station.fullName || ''}
-                onChange={(e) =>
-                  setEditingStation({
-                    ...editingStation,
-                    station: { ...editingStation.station, fullName: e.target.value },
-                  })
-                }
-              />
-              <TextField
-                fullWidth
-                type="number"
-                label="Longitude"
-                inputProps={{ step: '0.000001' }}
-                value={editingStation.station.longitude ?? ''}
-                onChange={(e) =>
-                  setEditingStation({
-                    ...editingStation,
-                    station: {
-                      ...editingStation.station,
-                      longitude: e.target.value ? parseFloat(e.target.value) : undefined,
-                    },
-                  })
-                }
-              />
-              <TextField
-                fullWidth
-                type="number"
-                label="Latitude"
-                inputProps={{ step: '0.000001' }}
-                value={editingStation.station.latitude ?? ''}
-                onChange={(e) =>
-                  setEditingStation({
-                    ...editingStation,
-                    station: {
-                      ...editingStation.station,
-                      latitude: e.target.value ? parseFloat(e.target.value) : undefined,
-                    },
-                  })
-                }
-              />
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleSaveStation} variant="contained">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {stationDialog}
     </Box>
   );
 }

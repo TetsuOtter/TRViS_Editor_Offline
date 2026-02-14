@@ -5,7 +5,7 @@
  * It supports both localStorage (current) and backend HTTP (future) implementations.
  */
 
-import { ProjectData, StorageState } from '../types/storage';
+import type { ProjectData, StorageState } from '../types/storage';
 
 /**
  * Operation result type for handling success/failure cases

@@ -6,7 +6,10 @@ import { downloadDatabase } from '../../utils/jsonIO';
 
 export function JsonExport() {
   const workGroups = useDataStore((state) => state.workGroups);
-  const activeProjectData = useProjectStore((state) => state.getActiveProjectData());
+  const activeProjectData = useProjectStore((state) => {
+    if (!state.activeProjectId) return null;
+    return state.projectData[state.activeProjectId] || null;
+  });
 
   const handleExport = () => {
     if (!activeProjectData) return;

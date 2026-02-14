@@ -5,7 +5,7 @@
  * Supports both localStorage and HTTP backends.
  */
 
-import { IDataRepository, RepositoryConfig, IRepositoryFactory } from './types';
+import type { IDataRepository, RepositoryConfig, IRepositoryFactory } from './types';
 import { LocalStorageAdapter } from './adapters/LocalStorageAdapter';
 import { HttpAdapter } from './adapters/HttpAdapter';
 

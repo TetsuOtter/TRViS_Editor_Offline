@@ -141,6 +141,165 @@ export function TrainTypePatternEditor() {
     {} as Record<string, TrainTypePattern[]>
   );
 
+  const patternDialog = (
+    <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
+      <DialogTitle>
+        {editingPattern?.patternId ? 'Edit Train Type Pattern' : 'Create New Train Type Pattern'}
+      </DialogTitle>
+      <DialogContent>
+        {editingPattern && (
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            <TextField
+              select
+              fullWidth
+              label="Line"
+              value={editingPattern.pattern.lineId}
+              onChange={(e) => {
+                setEditingPattern({
+                  ...editingPattern,
+                  pattern: { ...editingPattern.pattern, lineId: e.target.value },
+                });
+              }}
+            >
+              {lines.map((line) => (
+                <MenuItem key={line.id} value={line.id}>
+                  {line.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              fullWidth
+              label="Type Name (e.g., 普通, 急行, 特快)"
+              value={editingPattern.pattern.typeName}
+              onChange={(e) =>
+                setEditingPattern({
+                  ...editingPattern,
+                  pattern: { ...editingPattern.pattern, typeName: e.target.value },
+                })
+              }
+            />
+
+            <Box sx={{ border: '1px solid #ddd', borderRadius: 1, p: 2 }}>
+              <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                Intervals ({editingPattern.pattern.intervals.length})
+              </Typography>
+
+              {editingPattern.pattern.intervals.length > 0 && (
+                <TableContainer component={Paper} sx={{ mb: 2 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                        <TableCell>From</TableCell>
+                        <TableCell>To</TableCell>
+                        <TableCell>Time</TableCell>
+                        <TableCell width="50" align="center">
+                          Del
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {editingPattern.pattern.intervals.map((interval, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell sx={{ fontSize: '0.875rem' }}>
+                            {getStationName(interval.fromStationId)}
+                          </TableCell>
+                          <TableCell sx={{ fontSize: '0.875rem' }}>
+                            {getStationName(interval.toStationId)}
+                          </TableCell>
+                          <TableCell sx={{ fontSize: '0.875rem' }}>
+                            {String(interval.driveTime_MM).padStart(2, '0')}:
+                            {String(interval.driveTime_SS).padStart(2, '0')}
+                          </TableCell>
+                          <TableCell align="center">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleRemoveInterval(idx)}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+
+              <Stack spacing={1}>
+                <TextField
+                  select
+                  fullWidth
+                  label="From Station"
+                  value={selectedFromStationId}
+                  onChange={(e) => setSelectedFromStationId(e.target.value)}
+                  size="small"
+                >
+                  {lineStations.map((s) => (
+                    <MenuItem key={s.id} value={s.id}>
+                      {s.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  select
+                  fullWidth
+                  label="To Station"
+                  value={selectedToStationId}
+                  onChange={(e) => setSelectedToStationId(e.target.value)}
+                  size="small"
+                >
+                  {lineStations.map((s) => (
+                    <MenuItem key={s.id} value={s.id}>
+                      {s.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <Stack direction="row" spacing={1}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Minutes"
+                    inputProps={{ min: 0, max: 59 }}
+                    value={driveTimeMinutes}
+                    onChange={(e) => setDriveTimeMinutes(parseInt(e.target.value) || 0)}
+                    size="small"
+                  />
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Seconds"
+                    inputProps={{ min: 0, max: 59 }}
+                    value={driveTimeSeconds}
+                    onChange={(e) => setDriveTimeSeconds(parseInt(e.target.value) || 0)}
+                    size="small"
+                  />
+                </Stack>
+
+                <Button
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  onClick={handleAddInterval}
+                  disabled={!selectedFromStationId || !selectedToStationId}
+                >
+                  Add Interval
+                </Button>
+              </Stack>
+            </Box>
+          </Stack>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+        <Button onClick={handleSavePattern} variant="contained">
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
   if (lines.length === 0) {
     return (
       <Card>
@@ -155,20 +314,23 @@ export function TrainTypePatternEditor() {
 
   if (Object.keys(patternsByLine).length === 0) {
     return (
-      <Card>
-        <CardContent sx={{ textAlign: 'center', py: 4 }}>
-          <Typography color="textSecondary" sx={{ mb: 2 }}>
-            No train type patterns. Create one to get started.
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenEditPattern()}
-          >
-            Create Pattern
-          </Button>
-        </CardContent>
-      </Card>
+      <>
+        <Card>
+          <CardContent sx={{ textAlign: 'center', py: 4 }}>
+            <Typography color="textSecondary" sx={{ mb: 2 }}>
+              No train type patterns. Create one to get started.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenEditPattern()}
+            >
+              Create Pattern
+            </Button>
+          </CardContent>
+        </Card>
+        {patternDialog}
+      </>
     );
   }
 
@@ -265,163 +427,7 @@ export function TrainTypePatternEditor() {
         })}
       </Stack>
 
-      {/* Edit Pattern Dialog */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>
-          {editingPattern?.patternId ? 'Edit Train Type Pattern' : 'Create New Train Type Pattern'}
-        </DialogTitle>
-        <DialogContent>
-          {editingPattern && (
-            <Stack spacing={2} sx={{ mt: 2 }}>
-              <TextField
-                select
-                fullWidth
-                label="Line"
-                value={editingPattern.pattern.lineId}
-                onChange={(e) => {
-                  setEditingPattern({
-                    ...editingPattern,
-                    pattern: { ...editingPattern.pattern, lineId: e.target.value },
-                  });
-                }}
-              >
-                {lines.map((line) => (
-                  <MenuItem key={line.id} value={line.id}>
-                    {line.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                fullWidth
-                label="Type Name (e.g., 普通, 急行, 特快)"
-                value={editingPattern.pattern.typeName}
-                onChange={(e) =>
-                  setEditingPattern({
-                    ...editingPattern,
-                    pattern: { ...editingPattern.pattern, typeName: e.target.value },
-                  })
-                }
-              />
-
-              <Box sx={{ border: '1px solid #ddd', borderRadius: 1, p: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                  Intervals ({editingPattern.pattern.intervals.length})
-                </Typography>
-
-                {editingPattern.pattern.intervals.length > 0 && (
-                  <TableContainer component={Paper} sx={{ mb: 2 }}>
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                          <TableCell>From</TableCell>
-                          <TableCell>To</TableCell>
-                          <TableCell>Time</TableCell>
-                          <TableCell width="50" align="center">
-                            Del
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {editingPattern.pattern.intervals.map((interval, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell sx={{ fontSize: '0.875rem' }}>
-                              {getStationName(interval.fromStationId)}
-                            </TableCell>
-                            <TableCell sx={{ fontSize: '0.875rem' }}>
-                              {getStationName(interval.toStationId)}
-                            </TableCell>
-                            <TableCell sx={{ fontSize: '0.875rem' }}>
-                              {String(interval.driveTime_MM).padStart(2, '0')}:
-                              {String(interval.driveTime_SS).padStart(2, '0')}
-                            </TableCell>
-                            <TableCell align="center">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleRemoveInterval(idx)}
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                )}
-
-                <Stack spacing={1}>
-                  <TextField
-                    select
-                    fullWidth
-                    label="From Station"
-                    value={selectedFromStationId}
-                    onChange={(e) => setSelectedFromStationId(e.target.value)}
-                    size="small"
-                  >
-                    {lineStations.map((s) => (
-                      <MenuItem key={s.id} value={s.id}>
-                        {s.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  <TextField
-                    select
-                    fullWidth
-                    label="To Station"
-                    value={selectedToStationId}
-                    onChange={(e) => setSelectedToStationId(e.target.value)}
-                    size="small"
-                  >
-                    {lineStations.map((s) => (
-                      <MenuItem key={s.id} value={s.id}>
-                        {s.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  <Stack direction="row" spacing={1}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Minutes"
-                      inputProps={{ min: 0, max: 59 }}
-                      value={driveTimeMinutes}
-                      onChange={(e) => setDriveTimeMinutes(parseInt(e.target.value) || 0)}
-                      size="small"
-                    />
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Seconds"
-                      inputProps={{ min: 0, max: 59 }}
-                      value={driveTimeSeconds}
-                      onChange={(e) => setDriveTimeSeconds(parseInt(e.target.value) || 0)}
-                      size="small"
-                    />
-                  </Stack>
-
-                  <Button
-                    variant="outlined"
-                    startIcon={<AddIcon />}
-                    onClick={handleAddInterval}
-                    disabled={!selectedFromStationId || !selectedToStationId}
-                  >
-                    Add Interval
-                  </Button>
-                </Stack>
-              </Box>
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleSavePattern} variant="contained">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {patternDialog}
     </Box>
   );
 }

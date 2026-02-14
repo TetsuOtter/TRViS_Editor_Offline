@@ -6,8 +6,8 @@
  * Includes retry logic, offline support, and sync queuing.
  */
 
-import { IDataRepository, Result, SyncStatus, RepositoryConfig } from '../types';
-import { ProjectData, StorageState } from '../../types/storage';
+import type { IDataRepository, Result, SyncStatus, RepositoryConfig } from '../types';
+import type { ProjectData, StorageState } from '../../types/storage';
 
 interface PendingOperation {
   type: 'create' | 'update' | 'delete';

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDataStore } from '../store/dataStore';
 import { useEditorStore } from '../store/editorStore';
 import { useProjectStore } from '../store/projectStore';
@@ -10,11 +11,11 @@ import { useProjectStore } from '../store/projectStore';
  */
 export function useAutoSave(enabled: boolean = true) {
   const workGroups = useDataStore((state) => state.workGroups);
-  const metadata = useEditorStore((state) => ({
+  const metadata = useEditorStore(useShallow((state) => ({
     stations: state.stations,
     lines: state.lines,
     trainTypePatterns: state.trainTypePatterns,
-  }));
+  })));
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
 
   useEffect(() => {

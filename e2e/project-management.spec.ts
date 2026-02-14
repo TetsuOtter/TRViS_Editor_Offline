@@ -11,11 +11,13 @@ test.describe('Project Management', () => {
   test('should create a new project', async ({ page }) => {
     await page.goto('/')
 
+    const main = page.locator('main')
+
     // Should show "Create Your First Project" button when no projects exist
-    await expect(page.getByRole('button', { name: 'Create Your First Project' })).toBeVisible()
+    await expect(main.getByRole('button', { name: 'Create Your First Project' })).toBeVisible()
 
     // Create new project using the main "New Project" button
-    await page.getByRole('button', { name: 'New Project' }).click()
+    await main.getByRole('button', { name: 'New Project' }).click()
 
     // Fill project details in dialog
     await page.getByLabel('Project Name').fill('E2E Test Project')
@@ -24,75 +26,82 @@ test.describe('Project Management', () => {
     await page.getByRole('button', { name: 'Create' }).click()
 
     // Dialog should close and project should be visible
-    await expect(page.getByText('E2E Test Project')).toBeVisible()
+    await expect(main.getByText('E2E Test Project').first()).toBeVisible()
   })
 
   test('should switch between projects', async ({ page }) => {
     await page.goto('/')
 
+    const main = page.locator('main')
+
     // Create first project
-    await page.getByRole('button', { name: 'New Project' }).click()
+    await main.getByRole('button', { name: 'New Project' }).click()
     await page.getByLabel('Project Name').fill('Project 1')
     await page.getByRole('button', { name: 'Create' }).click()
 
     // Create second project
-    await page.getByRole('button', { name: 'New Project' }).click()
+    await main.getByRole('button', { name: 'New Project' }).click()
     await page.getByLabel('Project Name').fill('Project 2')
     await page.getByRole('button', { name: 'Create' }).click()
 
-    // Both projects should be visible in the list
-    await expect(page.getByText('Project 1')).toBeVisible()
-    await expect(page.getByText('Project 2')).toBeVisible()
+    // Both projects should be visible in the main project list
+    await expect(main.getByText('Project 1').first()).toBeVisible()
+    await expect(main.getByText('Project 2').first()).toBeVisible()
 
-    // Click on first project to select it
-    await page.getByText('Project 1').click()
+    // Click on first project to select it (use list item text)
+    await main.locator('li').filter({ hasText: 'Project 1' }).click()
 
-    // Project should be highlighted (check for selection styling)
-    const project1Item = page.getByText('Project 1').locator('..')
-    await expect(project1Item).toHaveCSS('background-color', /rgba.*/)
+    // After selecting Project 1, the heading should show Project 1
+    await expect(main.locator('h6').filter({ hasText: /^Project 1$/ })).toBeVisible()
   })
 
   test('should delete a project', async ({ page }) => {
     await page.goto('/')
 
+    const main = page.locator('main')
+
     // Create project
-    await page.getByRole('button', { name: 'New Project' }).click()
+    await main.getByRole('button', { name: 'New Project' }).click()
     await page.getByLabel('Project Name').fill('Delete Test Project')
     await page.getByRole('button', { name: 'Create' }).click()
 
-    // Delete project using delete icon
-    await page.locator('button[title="Delete project"]').click()
+    // Delete project using delete icon (MUI Tooltip sets aria-label)
+    await main.getByRole('button', { name: 'Delete project' }).click()
 
     // Project should be removed from list
-    await expect(page.getByText('Delete Test Project')).not.toBeVisible()
+    await expect(main.getByText('Delete Test Project')).not.toBeVisible()
 
     // Should show "Create Your First Project" button again
-    await expect(page.getByRole('button', { name: 'Create Your First Project' })).toBeVisible()
+    await expect(main.getByRole('button', { name: 'Create Your First Project' })).toBeVisible()
   })
 
   test('should persist projects across browser sessions', async ({ page }) => {
     await page.goto('/')
 
+    const main = page.locator('main')
+
     // Create project
-    await page.getByRole('button', { name: 'New Project' }).click()
+    await main.getByRole('button', { name: 'New Project' }).click()
     await page.getByLabel('Project Name').fill('Persistence Test')
     await page.getByRole('button', { name: 'Create' }).click()
 
     // Verify project exists
-    await expect(page.getByText('Persistence Test')).toBeVisible()
+    await expect(main.getByText('Persistence Test').first()).toBeVisible()
 
     // Reload page
     await page.reload()
 
     // Project should still exist
-    await expect(page.getByText('Persistence Test')).toBeVisible()
+    await expect(main.getByText('Persistence Test').first()).toBeVisible()
   })
 
   test('should handle empty project name validation', async ({ page }) => {
     await page.goto('/')
 
+    const main = page.locator('main')
+
     // Open create dialog
-    await page.getByRole('button', { name: 'New Project' }).click()
+    await main.getByRole('button', { name: 'New Project' }).click()
 
     // Create button should be disabled with empty name
     await expect(page.getByRole('button', { name: 'Create' })).toBeDisabled()

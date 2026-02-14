@@ -139,132 +139,8 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
     setDepartureTime('08:00:00');
   };
 
-  if (work.Trains.length === 0) {
-    return (
-      <Card>
-        <CardContent sx={{ textAlign: 'center', py: 4 }}>
-          <Typography color="textSecondary" sx={{ mb: 2 }}>
-            No trains in this work. Create one to get started.
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenEditTrain()}
-          >
-            Create Train
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Box>
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenEditTrain()}
-        >
-          Add Train
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={() => setGenerateDialogOpen(true)}
-          disabled={trainTypePatterns.length === 0}
-        >
-          Generate from Pattern
-        </Button>
-      </Stack>
-
-      <Stack spacing={2}>
-        {work.Trains.map((train, trainIndex) => (
-          <Accordion key={train.Id || trainIndex}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography sx={{ flexGrow: 1 }}>
-                <strong>{train.TrainNumber}</strong> ({train.TimetableRows.length} stops)
-              </Typography>
-              <Stack direction="row" spacing={0.5}>
-                <Tooltip title="Clone Train">
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCloneTrainIndex(trainIndex);
-                      setCloneTrainNumber('');
-                      setCloneDialogOpen(true);
-                    }}
-                  >
-                    <FileCopyIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Edit Train">
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenEditTrain(trainIndex);
-                    }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Delete Train">
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteTrain(workGroupIndex, workIndex, trainIndex);
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Stack spacing={2} sx={{ width: '100%' }}>
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="body2">
-                      <strong>Train Number:</strong> {train.TrainNumber}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="body2">
-                      <strong>Direction:</strong> {train.Direction === 1 ? 'Descending' : 'Ascending'}
-                    </Typography>
-                  </Grid>
-                  {train.MaxSpeed && (
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Typography variant="body2">
-                        <strong>Max Speed:</strong> {train.MaxSpeed} km/h
-                      </Typography>
-                    </Grid>
-                  )}
-                  {train.CarCount && (
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Typography variant="body2">
-                        <strong>Car Count:</strong> {train.CarCount}
-                      </Typography>
-                    </Grid>
-                  )}
-                </Grid>
-
-                <Typography variant="subtitle2" sx={{ mt: 2 }}>
-                  Timetable Rows ({train.TimetableRows.length})
-                </Typography>
-                <TimetableGrid
-                  workGroupIndex={workGroupIndex}
-                  workIndex={workIndex}
-                  trainIndex={trainIndex}
-                />
-              </Stack>
-            </AccordionDetails>
-          </Accordion>
-        ))}
-      </Stack>
-
+  const trainDialogs = (
+    <>
       {/* Edit Train Dialog */}
       <Dialog open={editTrainDialogOpen} onClose={() => setEditTrainDialogOpen(false)} fullWidth>
         <DialogTitle>
@@ -434,6 +310,139 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
           </Button>
         </DialogActions>
       </Dialog>
+    </>
+  );
+
+  if (work.Trains.length === 0) {
+    return (
+      <>
+        <Card>
+          <CardContent sx={{ textAlign: 'center', py: 4 }}>
+            <Typography color="textSecondary" sx={{ mb: 2 }}>
+              No trains in this work. Create one to get started.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenEditTrain()}
+            >
+              Create Train
+            </Button>
+          </CardContent>
+        </Card>
+        {trainDialogs}
+      </>
+    );
+  }
+
+  return (
+    <Box>
+      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenEditTrain()}
+        >
+          Add Train
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => setGenerateDialogOpen(true)}
+          disabled={trainTypePatterns.length === 0}
+        >
+          Generate from Pattern
+        </Button>
+      </Stack>
+
+      <Stack spacing={2}>
+        {work.Trains.map((train, trainIndex) => (
+          <Accordion key={train.Id || trainIndex}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography sx={{ flexGrow: 1 }}>
+                <strong>{train.TrainNumber}</strong> ({train.TimetableRows.length} stops)
+              </Typography>
+              <Stack direction="row" spacing={0.5}>
+                <Tooltip title="Clone Train">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCloneTrainIndex(trainIndex);
+                      setCloneTrainNumber('');
+                      setCloneDialogOpen(true);
+                    }}
+                  >
+                    <FileCopyIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Edit Train">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenEditTrain(trainIndex);
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete Train">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteTrain(workGroupIndex, workIndex, trainIndex);
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Stack spacing={2} sx={{ width: '100%' }}>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2">
+                      <strong>Train Number:</strong> {train.TrainNumber}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2">
+                      <strong>Direction:</strong> {train.Direction === 1 ? 'Descending' : 'Ascending'}
+                    </Typography>
+                  </Grid>
+                  {train.MaxSpeed && (
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Typography variant="body2">
+                        <strong>Max Speed:</strong> {train.MaxSpeed} km/h
+                      </Typography>
+                    </Grid>
+                  )}
+                  {train.CarCount && (
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Typography variant="body2">
+                        <strong>Car Count:</strong> {train.CarCount}
+                      </Typography>
+                    </Grid>
+                  )}
+                </Grid>
+
+                <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                  Timetable Rows ({train.TimetableRows.length})
+                </Typography>
+                <TimetableGrid
+                  workGroupIndex={workGroupIndex}
+                  workIndex={workIndex}
+                  trainIndex={trainIndex}
+                />
+              </Stack>
+            </AccordionDetails>
+          </Accordion>
+        ))}
+      </Stack>
+
+      {trainDialogs}
     </Box>
   );
 }

@@ -11,7 +11,10 @@ import { TrainTypePatternEditor } from '../components/LineManager/TrainTypePatte
 
 function EditorPage() {
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
-  const activeProjectData = useProjectStore((state) => state.getActiveProjectData());
+  const activeProjectData = useProjectStore((state) => {
+    if (!state.activeProjectId) return null;
+    return state.projectData[state.activeProjectId] || null;
+  });
 
   const workGroups = useDataStore((state) => state.workGroups);
   const syncWithProject = useDataStore((state) => state.syncWithProject);

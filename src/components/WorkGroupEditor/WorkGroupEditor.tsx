@@ -94,22 +94,114 @@ export function WorkGroupEditor() {
     setEditWorkDialogOpen(false);
   };
 
+  const dialogs = (
+    <>
+      {/* Create WorkGroup Dialog */}
+      <Dialog open={createWGDialogOpen} onClose={() => setCreateWGDialogOpen(false)} fullWidth>
+        <DialogTitle>Create New WorkGroup</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            label="WorkGroup Name"
+            value={newWGName}
+            onChange={(e) => setNewWGName(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleCreateWorkGroup();
+              }
+            }}
+            sx={{ mt: 2 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateWGDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleCreateWorkGroup}
+            variant="contained"
+            disabled={!newWGName.trim()}
+          >
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Work Dialog */}
+      <Dialog open={editWorkDialogOpen} onClose={() => setEditWorkDialogOpen(false)} fullWidth>
+        <DialogTitle>
+          {editingWork?.workIndex !== undefined ? 'Edit Work' : 'Create New Work'}
+        </DialogTitle>
+        <DialogContent>
+          {editingWork && (
+            <Stack spacing={2} sx={{ mt: 2 }}>
+              <TextField
+                fullWidth
+                label="Work Name"
+                value={editingWork.work.Name}
+                onChange={(e) =>
+                  setEditingWork({
+                    ...editingWork,
+                    work: { ...editingWork.work, Name: e.target.value },
+                  })
+                }
+              />
+              <TextField
+                fullWidth
+                label="Affect Date (YYYYMMDD)"
+                value={editingWork.work.AffectDate}
+                onChange={(e) =>
+                  setEditingWork({
+                    ...editingWork,
+                    work: { ...editingWork.work, AffectDate: e.target.value },
+                  })
+                }
+                placeholder="20240101"
+              />
+              <TextField
+                fullWidth
+                label="Remarks (HTML supported)"
+                multiline
+                rows={3}
+                value={editingWork.work.Remarks || ''}
+                onChange={(e) =>
+                  setEditingWork({
+                    ...editingWork,
+                    work: { ...editingWork.work, Remarks: e.target.value },
+                  })
+                }
+              />
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditWorkDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleSaveWork} variant="contained">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+
   if (workGroups.length === 0) {
     return (
-      <Card>
-        <CardContent sx={{ textAlign: 'center', py: 4 }}>
-          <Typography color="textSecondary" sx={{ mb: 2 }}>
-            No work groups. Create one to get started.
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setCreateWGDialogOpen(true)}
-          >
-            Create WorkGroup
-          </Button>
-        </CardContent>
-      </Card>
+      <>
+        <Card>
+          <CardContent sx={{ textAlign: 'center', py: 4 }}>
+            <Typography color="textSecondary" sx={{ mb: 2 }}>
+              No work groups. Create one to get started.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setCreateWGDialogOpen(true)}
+            >
+              Create WorkGroup
+            </Button>
+          </CardContent>
+        </Card>
+        {dialogs}
+      </>
     );
   }
 
@@ -200,90 +292,7 @@ export function WorkGroupEditor() {
         ))}
       </Stack>
 
-      {/* Create WorkGroup Dialog */}
-      <Dialog open={createWGDialogOpen} onClose={() => setCreateWGDialogOpen(false)} fullWidth>
-        <DialogTitle>Create New WorkGroup</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            fullWidth
-            label="WorkGroup Name"
-            value={newWGName}
-            onChange={(e) => setNewWGName(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleCreateWorkGroup();
-              }
-            }}
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCreateWGDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={handleCreateWorkGroup}
-            variant="contained"
-            disabled={!newWGName.trim()}
-          >
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Edit Work Dialog */}
-      <Dialog open={editWorkDialogOpen} onClose={() => setEditWorkDialogOpen(false)} fullWidth>
-        <DialogTitle>
-          {editingWork?.workIndex !== undefined ? 'Edit Work' : 'Create New Work'}
-        </DialogTitle>
-        <DialogContent>
-          {editingWork && (
-            <Stack spacing={2} sx={{ mt: 2 }}>
-              <TextField
-                fullWidth
-                label="Work Name"
-                value={editingWork.work.Name}
-                onChange={(e) =>
-                  setEditingWork({
-                    ...editingWork,
-                    work: { ...editingWork.work, Name: e.target.value },
-                  })
-                }
-              />
-              <TextField
-                fullWidth
-                label="Affect Date (YYYYMMDD)"
-                value={editingWork.work.AffectDate}
-                onChange={(e) =>
-                  setEditingWork({
-                    ...editingWork,
-                    work: { ...editingWork.work, AffectDate: e.target.value },
-                  })
-                }
-                placeholder="20240101"
-              />
-              <TextField
-                fullWidth
-                label="Remarks (HTML supported)"
-                multiline
-                rows={3}
-                value={editingWork.work.Remarks || ''}
-                onChange={(e) =>
-                  setEditingWork({
-                    ...editingWork,
-                    work: { ...editingWork.work, Remarks: e.target.value },
-                  })
-                }
-              />
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditWorkDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleSaveWork} variant="contained">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {dialogs}
     </Box>
   );
 }

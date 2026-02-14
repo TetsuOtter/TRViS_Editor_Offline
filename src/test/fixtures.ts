@@ -1,5 +1,5 @@
 import { Project, WorkGroup, Work, Train, TimetableRow } from '../types/storage'
-import { Station, Line, TrainTypePattern } from '../types/editor'
+import type { Station, Line, TrainTypePattern } from '../types/editor'
 import { TRViSData } from '../types/trvis'
 
 // Sample stations
