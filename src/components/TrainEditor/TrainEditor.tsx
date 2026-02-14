@@ -20,6 +20,8 @@ import {
   Switch,
   Grid,
   MenuItem,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -29,6 +31,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useDataStore } from '../../store/dataStore';
 import { useEditorStore } from '../../store/editorStore';
 import type { Train } from '../../types/trvis';
+import { createDefaultTRViSConfiguration } from '../../types/trvisconfiguration';
+import { FormField } from '../FormFields/TRViSFormFields';
 import { TimetableGrid } from '../TimetableEditor/TimetableGrid';
 import { generateTimetableFromPattern } from '../../utils/trainGenerator';
 import { v4 as uuidv4 } from 'uuid';
@@ -58,12 +62,15 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
   const work = getWork(workGroupIndex, workIndex);
   const [editingTrain, setEditingTrain] = useState<EditingTrain | null>(null);
   const [editTrainDialogOpen, setEditTrainDialogOpen] = useState(false);
+  const [editTabIndex, setEditTabIndex] = useState(0);
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
   const [cloneTrainIndex, setCloneTrainIndex] = useState<number | null>(null);
   const [cloneTrainNumber, setCloneTrainNumber] = useState('');
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
   const [selectedPatternId, setSelectedPatternId] = useState<string>('');
   const [departureTime, setDepartureTime] = useState('08:00:00');
+
+  const trainConfig = createDefaultTRViSConfiguration().train;
 
   if (!work) {
     return <Box>Work not found</Box>;
@@ -142,83 +149,245 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
   const trainDialogs = (
     <>
       {/* Edit Train Dialog */}
-      <Dialog open={editTrainDialogOpen} onClose={() => setEditTrainDialogOpen(false)} fullWidth>
+      <Dialog open={editTrainDialogOpen} onClose={() => setEditTrainDialogOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>
           {editingTrain?.trainIndex != null ? 'Edit Train' : 'Create New Train'}
         </DialogTitle>
         <DialogContent>
           {editingTrain && (
-            <Stack spacing={2} sx={{ mt: 2 }}>
-              <TextField
-                fullWidth
-                label="Train Number"
-                value={editingTrain.train.TrainNumber}
-                onChange={(e) =>
-                  setEditingTrain({
-                    ...editingTrain,
-                    train: { ...editingTrain.train, TrainNumber: e.target.value },
-                  })
-                }
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={editingTrain.train.Direction === 1}
-                    onChange={(e) =>
-                      setEditingTrain({
-                        ...editingTrain,
-                        train: {
-                          ...editingTrain.train,
-                          Direction: e.target.checked ? 1 : -1,
-                        },
-                      })
-                    }
-                  />
-                }
-                label="Direction: Descending (1) / Ascending (-1)"
-              />
-              <TextField
-                fullWidth
-                type="number"
-                label="Max Speed (km/h)"
-                value={editingTrain.train.MaxSpeed || ''}
-                onChange={(e) =>
-                  setEditingTrain({
-                    ...editingTrain,
-                    train: {
-                      ...editingTrain.train,
-                      MaxSpeed: e.target.value || undefined,
-                    },
-                  })
-                }
-              />
-              <TextField
-                fullWidth
-                type="number"
-                label="Car Count"
-                value={editingTrain.train.CarCount || ''}
-                onChange={(e) =>
-                  setEditingTrain({
-                    ...editingTrain,
-                    train: {
-                      ...editingTrain.train,
-                      CarCount: e.target.value ? parseInt(e.target.value, 10) : undefined,
-                    },
-                  })
-                }
-              />
-              <TextField
-                fullWidth
-                label="Destination"
-                value={editingTrain.train.Destination || ''}
-                onChange={(e) =>
-                  setEditingTrain({
-                    ...editingTrain,
-                    train: { ...editingTrain.train, Destination: e.target.value },
-                  })
-                }
-              />
-            </Stack>
+            <Box sx={{ mt: 2 }}>
+              <Tabs value={editTabIndex} onChange={(_, value) => setEditTabIndex(value)}>
+                <Tab label="Basic" />
+                <Tab label="Advanced" />
+              </Tabs>
+
+              <Box sx={{ mt: 2 }}>
+                {editTabIndex === 0 && (
+                  <Stack spacing={2}>
+                    <FormField
+                      label="Train Number"
+                      value={editingTrain.train.TrainNumber}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, TrainNumber: value },
+                        })
+                      }
+                      config={trainConfig.trainNumber || { enabled: true, required: true, description: '' }}
+                    />
+                    <FormField
+                      label="Direction"
+                      value={editingTrain.train.Direction}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, Direction: value },
+                        })
+                      }
+                      type="number"
+                      config={trainConfig.direction || { enabled: true, required: true, description: '' }}
+                    />
+                    <FormField
+                      label="Max Speed"
+                      value={editingTrain.train.MaxSpeed || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, MaxSpeed: value },
+                        })
+                      }
+                      type="text"
+                      config={trainConfig.maxSpeed || { enabled: true, required: false, description: '', unit: 'km/h' }}
+                    />
+                    <FormField
+                      label="Car Count"
+                      value={editingTrain.train.CarCount || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, CarCount: value },
+                        })
+                      }
+                      type="number"
+                      config={trainConfig.carCount || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Destination"
+                      value={editingTrain.train.Destination || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, Destination: value },
+                        })
+                      }
+                      type="text"
+                      config={trainConfig.destination || { enabled: true, required: false, description: '' }}
+                    />
+                  </Stack>
+                )}
+
+                {editTabIndex === 1 && (
+                  <Stack spacing={2}>
+                    <FormField
+                      label="Speed Type"
+                      value={editingTrain.train.SpeedType || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, SpeedType: value },
+                        })
+                      }
+                      type="text"
+                      config={trainConfig.speedType || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Nominal Tractive Capacity"
+                      value={editingTrain.train.NominalTractiveCapacity || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, NominalTractiveCapacity: value },
+                        })
+                      }
+                      type="text"
+                      config={trainConfig.nominalTractiveCapacity || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Work Type"
+                      value={editingTrain.train.WorkType || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, WorkType: value },
+                        })
+                      }
+                      type="number"
+                      config={trainConfig.workType || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Day Count"
+                      value={editingTrain.train.DayCount || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, DayCount: value },
+                        })
+                      }
+                      type="number"
+                      config={trainConfig.dayCount || { enabled: true, required: false, description: '', min: 0 }}
+                    />
+                    <FormField
+                      label="Is Ride On Moving"
+                      value={editingTrain.train.IsRideOnMoving || false}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, IsRideOnMoving: value },
+                        })
+                      }
+                      type="boolean"
+                      config={trainConfig.isRideOnMoving || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Color"
+                      value={editingTrain.train.Color || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, Color: value },
+                        })
+                      }
+                      type="color"
+                      config={trainConfig.color || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Begin Remarks"
+                      value={editingTrain.train.BeginRemarks || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, BeginRemarks: value },
+                        })
+                      }
+                      type="textarea"
+                      config={trainConfig.beginRemarks || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="After Remarks"
+                      value={editingTrain.train.AfterRemarks || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, AfterRemarks: value },
+                        })
+                      }
+                      type="textarea"
+                      config={trainConfig.afterRemarks || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Remarks"
+                      value={editingTrain.train.Remarks || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, Remarks: value },
+                        })
+                      }
+                      type="textarea"
+                      config={trainConfig.remarks || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Train Info"
+                      value={editingTrain.train.TrainInfo || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, TrainInfo: value },
+                        })
+                      }
+                      type="textarea"
+                      config={trainConfig.trainInfo || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Before Departure"
+                      value={editingTrain.train.BeforeDeparture || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, BeforeDeparture: value },
+                        })
+                      }
+                      type="text"
+                      config={trainConfig.beforeDeparture || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="After Arrive"
+                      value={editingTrain.train.AfterArrive || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, AfterArrive: value },
+                        })
+                      }
+                      type="text"
+                      config={trainConfig.afterArrive || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Next Train ID"
+                      value={editingTrain.train.NextTrainId || ''}
+                      onChange={(value) =>
+                        setEditingTrain({
+                          ...editingTrain,
+                          train: { ...editingTrain.train, NextTrainId: value },
+                        })
+                      }
+                      type="text"
+                      config={trainConfig.nextTrainId || { enabled: true, required: false, description: '' }}
+                    />
+                  </Stack>
+                )}
+              </Box>
+            </Box>
           )}
         </DialogContent>
         <DialogActions>

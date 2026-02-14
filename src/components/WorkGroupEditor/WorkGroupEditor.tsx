@@ -17,12 +17,16 @@ import {
   AccordionSummary,
   AccordionDetails,
   Paper,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useDataStore } from '../../store/dataStore';
+import { createDefaultTRViSConfiguration } from '../../types/trvisconfiguration';
+import { FormField } from '../FormFields/TRViSFormFields';
 import { TrainEditor } from '../TrainEditor/TrainEditor';
 import type { WorkGroup, Work } from '../../types/trvis';
 import { v4 as uuidv4 } from 'uuid';
@@ -45,6 +49,9 @@ export function WorkGroupEditor() {
   const [createWGDialogOpen, setCreateWGDialogOpen] = useState(false);
   const [editingWork, setEditingWork] = useState<EditingWork | null>(null);
   const [editWorkDialogOpen, setEditWorkDialogOpen] = useState(false);
+  const [editWorkTabIndex, setEditWorkTabIndex] = useState(0);
+
+  const workConfig = createDefaultTRViSConfiguration().work;
 
   const handleCreateWorkGroup = () => {
     if (newWGName.trim()) {
@@ -129,50 +136,126 @@ export function WorkGroupEditor() {
       </Dialog>
 
       {/* Edit Work Dialog */}
-      <Dialog open={editWorkDialogOpen} onClose={() => setEditWorkDialogOpen(false)} fullWidth>
+      <Dialog open={editWorkDialogOpen} onClose={() => setEditWorkDialogOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>
           {editingWork?.workIndex != null ? 'Edit Work' : 'Create New Work'}
         </DialogTitle>
         <DialogContent>
           {editingWork && (
-            <Stack spacing={2} sx={{ mt: 2 }}>
-              <TextField
-                fullWidth
-                label="Work Name"
-                value={editingWork.work.Name}
-                onChange={(e) =>
-                  setEditingWork({
-                    ...editingWork,
-                    work: { ...editingWork.work, Name: e.target.value },
-                  })
-                }
-              />
-              <TextField
-                fullWidth
-                label="Affect Date (YYYYMMDD)"
-                value={editingWork.work.AffectDate}
-                onChange={(e) =>
-                  setEditingWork({
-                    ...editingWork,
-                    work: { ...editingWork.work, AffectDate: e.target.value },
-                  })
-                }
-                placeholder="20240101"
-              />
-              <TextField
-                fullWidth
-                label="Remarks (HTML supported)"
-                multiline
-                rows={3}
-                value={editingWork.work.Remarks || ''}
-                onChange={(e) =>
-                  setEditingWork({
-                    ...editingWork,
-                    work: { ...editingWork.work, Remarks: e.target.value },
-                  })
-                }
-              />
-            </Stack>
+            <Box sx={{ mt: 2 }}>
+              <Tabs value={editWorkTabIndex} onChange={(_, value) => setEditWorkTabIndex(value)}>
+                <Tab label="Basic" />
+                <Tab label="Advanced" />
+              </Tabs>
+
+              <Box sx={{ mt: 2 }}>
+                {editWorkTabIndex === 0 && (
+                  <Stack spacing={2}>
+                    <FormField
+                      label="Work Name"
+                      value={editingWork.work.Name}
+                      onChange={(value) =>
+                        setEditingWork({
+                          ...editingWork,
+                          work: { ...editingWork.work, Name: value },
+                        })
+                      }
+                      config={workConfig.name || { enabled: true, required: true, description: '' }}
+                    />
+                    <FormField
+                      label="Affect Date"
+                      value={editingWork.work.AffectDate || ''}
+                      onChange={(value) =>
+                        setEditingWork({
+                          ...editingWork,
+                          work: { ...editingWork.work, AffectDate: value },
+                        })
+                      }
+                      type="text"
+                      config={workConfig.affectDate || { enabled: true, required: false, description: '', format: 'YYYYMMDD' }}
+                      placeholder="20240101"
+                    />
+                    <FormField
+                      label="Remarks"
+                      value={editingWork.work.Remarks || ''}
+                      onChange={(value) =>
+                        setEditingWork({
+                          ...editingWork,
+                          work: { ...editingWork.work, Remarks: value },
+                        })
+                      }
+                      type="textarea"
+                      config={workConfig.remarks || { enabled: true, required: false, description: '' }}
+                    />
+                  </Stack>
+                )}
+
+                {editWorkTabIndex === 1 && (
+                  <Stack spacing={2}>
+                    <FormField
+                      label="Affix Content Type"
+                      value={editingWork.work.AffixContentType || ''}
+                      onChange={(value) =>
+                        setEditingWork({
+                          ...editingWork,
+                          work: { ...editingWork.work, AffixContentType: value },
+                        })
+                      }
+                      type="number"
+                      config={workConfig.affixContentType || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Affix Content"
+                      value={editingWork.work.AffixContent || ''}
+                      onChange={(value) =>
+                        setEditingWork({
+                          ...editingWork,
+                          work: { ...editingWork.work, AffixContent: value },
+                        })
+                      }
+                      type="textarea"
+                      config={workConfig.affixContent || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="Has E-Train Timetable"
+                      value={editingWork.work.HasETrainTimetable || false}
+                      onChange={(value) =>
+                        setEditingWork({
+                          ...editingWork,
+                          work: { ...editingWork.work, HasETrainTimetable: value },
+                        })
+                      }
+                      type="boolean"
+                      config={workConfig.hasETrainTimetable || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="E-Train Timetable Content Type"
+                      value={editingWork.work.ETrainTimetableContentType || ''}
+                      onChange={(value) =>
+                        setEditingWork({
+                          ...editingWork,
+                          work: { ...editingWork.work, ETrainTimetableContentType: value },
+                        })
+                      }
+                      type="number"
+                      config={workConfig.eTrainTimetableContentType || { enabled: true, required: false, description: '' }}
+                    />
+                    <FormField
+                      label="E-Train Timetable Content"
+                      value={editingWork.work.ETrainTimetableContent || ''}
+                      onChange={(value) =>
+                        setEditingWork({
+                          ...editingWork,
+                          work: { ...editingWork.work, ETrainTimetableContent: value },
+                        })
+                      }
+                      type="textarea"
+                      config={workConfig.eTrainTimetableContent || { enabled: true, required: false, description: '' }}
+                    />
+                  </Stack>
+                )}
+              </Box>
+            </Box>
           )}
         </DialogContent>
         <DialogActions>
