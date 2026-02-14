@@ -27,12 +27,20 @@ export interface TimetableRow {
   Remarks?: string;
   MarkerColor?: string;
   MarkerText?: string;
+  StationType?: number;
+  StationIndex?: number;
+  LineColor?: string;
+  StopSecond?: number;
+  DisplayArrival?: string;
+  DisplayDeparture?: string;
+  AllowMultipleMen?: boolean;
+  NeedStaffChanging?: boolean;
 }
 
 export interface Train {
   Id?: string;
   TrainNumber: string;
-  MaxSpeed?: string;
+  MaxSpeed?: number | string;
   SpeedType?: string;
   NominalTractiveCapacity?: string;
   CarCount?: number;
@@ -49,6 +57,13 @@ export interface Train {
   AfterArrive?: string;
   TrainInfo?: string;
   NextTrainId?: string;
+  TrainInfo2?: string;
+  TrainLength?: number;
+  TrainMass?: number;
+  MaxAc?: number;
+  TrainType?: number;
+  ETrainTimetableContentType?: number;
+  ETrainTimetableContent?: string;
   TimetableRows: TimetableRow[];
 }
 
@@ -62,6 +77,12 @@ export interface Work {
   HasETrainTimetable?: boolean;
   ETrainTimetableContentType?: number;
   ETrainTimetableContent?: string;
+  Description?: string;
+  WorkGroup?: string;
+  CreatedAt?: string;
+  UpdatedAt?: string;
+  IsActive?: boolean;
+  DisplayOrder?: number;
   Trains: Train[];
   [key: string]: unknown;
 }
@@ -70,6 +91,12 @@ export interface WorkGroup {
   Id?: string;
   Name: string;
   DBVersion?: number;
+  Description?: string;
+  RailwayName?: string;
+  CreatedAt?: string;
+  UpdatedAt?: string;
+  IsActive?: boolean;
+  DisplayOrder?: number;
   Works: Work[];
 }
 
