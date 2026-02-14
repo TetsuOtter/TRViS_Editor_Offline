@@ -35,7 +35,8 @@ test.describe('JSON Import/Export', () => {
 
   test('should import valid TRViS JSON', async ({ page }) => {
     // Navigate to settings page where import functionality lives
-    await page.getByRole('button', { name: 'Settings' }).click()
+    await page.getByRole('button', { name: 'open drawer' }).click();
+    await page.getByText('Settings').click();
 
     // Create sample JSON data
     const sampleData = JSON.stringify([
@@ -85,7 +86,8 @@ test.describe('JSON Import/Export', () => {
 
   test('should reject invalid JSON format', async ({ page }) => {
     // Navigate to settings page
-    await page.getByRole('button', { name: 'Settings' }).click()
+    await page.getByRole('button', { name: 'open drawer' }).click();
+    await page.getByText('Settings').click();
 
     const invalidJSON = 'invalid json content'
 
@@ -116,7 +118,8 @@ test.describe('JSON Import/Export', () => {
 
     // We need data to generate AppLink; first add through the app
     // Navigate to settings page
-    await page.getByRole('button', { name: 'Settings' }).click()
+    await page.getByRole('button', { name: 'open drawer' }).click();
+    await page.getByText('Settings').click();
 
     // The Generate AppLink button should be visible (might be disabled without data)
     await expect(page.getByRole('button', { name: 'Generate AppLink' })).toBeVisible()
