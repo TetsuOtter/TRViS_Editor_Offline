@@ -136,6 +136,15 @@ export function TimetableGrid({
     setTimeAdjust({ open: false, startRowIndex: null, deltaSeconds: 0 });
   };
 
+  const handleEditRow = (rowIndex: number) => {
+    const row = train.TimetableRows[rowIndex];
+    if (row) {
+      setEditingRow({ rowIndex, row: { ...row } });
+      setEditRowDialogOpen(true);
+      setEditTabIndex(0);
+    }
+  };
+
   const columns: GridColDef[] = [
     {
       field: 'StationName',
@@ -197,12 +206,7 @@ export function TimetableGrid({
           }
           label="Edit"
           onClick={() => {
-            const rowIndex = params.id as number;
-            const row = train.TimetableRows[rowIndex];
-            if (row) {
-              setEditingRow({ rowIndex, row: { ...row } });
-              setEditRowDialogOpen(true);
-            }
+            handleEditRow(params.id as number);
           }}
         />,
         <GridActionsCellItem
