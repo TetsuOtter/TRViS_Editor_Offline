@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build-and-test:
+  build-and-unit-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,17 +34,37 @@ jobs:
       - name: Run unit tests
         run: npm run test:run
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+  e2e:
+    needs: build-and-unit-test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
 
-      - name: Run E2E tests
-        run: npm run test:e2e
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install Playwright browser (${{ matrix.browser }})
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run E2E tests (${{ matrix.browser }})
+        run: npx playwright test --project=${{ matrix.browser }}
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
           retention-days: 30
 
@@ -52,6 +72,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results
+          name: test-results-${{ matrix.browser }}
           path: test-results/
           retention-days: 30
