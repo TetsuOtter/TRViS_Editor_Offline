@@ -13,6 +13,10 @@ import {
   Chip,
   Tabs,
   Tab,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
@@ -316,31 +320,11 @@ export function TrainDetailPage() {
                     config={trainConfig.direction || { enabled: true, required: true, description: '' }}
                   />
                   <FormField
-                    label="Max Speed"
-                    value={maxSpeed}
-                    onChange={(value) => setMaxSpeed(value)}
-                    type="text"
-                    config={trainConfig.maxSpeed || { enabled: true, required: false, description: '', unit: 'km/h' }}
-                  />
-                  <FormField
                     label="Car Count"
                     value={carCount}
                     onChange={(value) => setCarCount(value)}
                     type="number"
                     config={trainConfig.carCount || { enabled: true, required: false, description: '' }}
-                  />
-                  <FormField
-                    label="Destination"
-                    value={destination}
-                    onChange={(value) => setDestination(value)}
-                    config={trainConfig.destination || { enabled: true, required: false, description: '' }}
-                  />
-                  <FormField
-                    label="Remarks"
-                    value={remarks}
-                    onChange={(value) => setRemarks(value)}
-                    type="textarea"
-                    config={trainConfig.remarks || { enabled: true, required: false, description: '' }}
                   />
                 </Stack>
               )}
@@ -348,24 +332,35 @@ export function TrainDetailPage() {
               {editTabIndex === 1 && (
                 <Stack spacing={2}>
                   <FormField
+                    label="Max Speed"
+                    value={maxSpeed}
+                    onChange={(value) => setMaxSpeed(value)}
+                    type="textarea"
+                    rows={3}
+                    config={trainConfig.maxSpeed || { enabled: true, required: false, description: '', unit: 'km/h' }}
+                  />
+                  <FormField
                     label="Speed Type"
                     value={speedType}
                     onChange={(value) => setSpeedType(value)}
-                    type="text"
+                    type="textarea"
+                    rows={3}
                     config={trainConfig.speedType || { enabled: true, required: false, description: '' }}
                   />
                   <FormField
                     label="Nominal Tractive Capacity"
                     value={nominalTractiveCapacity}
                     onChange={(value) => setNominalTractiveCapacity(value)}
-                    type="text"
+                    type="textarea"
+                    rows={3}
                     config={trainConfig.nominalTractiveCapacity || { enabled: true, required: false, description: '' }}
                   />
                   <FormField
                     label="Work Type"
                     value={workType}
                     onChange={(value) => setWorkType(value)}
-                    type="number"
+                    type="textarea"
+                    rows={3}
                     config={trainConfig.workType || { enabled: true, required: false, description: '' }}
                   />
                   <FormField
@@ -390,6 +385,22 @@ export function TrainDetailPage() {
                     config={trainConfig.color || { enabled: true, required: false, description: '' }}
                   />
                   <FormField
+                    label="Before Departure"
+                    value={beforeDeparture}
+                    onChange={(value) => setBeforeDeparture(value)}
+                    type="textarea"
+                    rows={3}
+                    config={trainConfig.beforeDeparture || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
+                    label="After Arrive"
+                    value={afterArrive}
+                    onChange={(value) => setAfterArrive(value)}
+                    type="textarea"
+                    rows={3}
+                    config={trainConfig.afterArrive || { enabled: true, required: false, description: '' }}
+                  />
+                  <FormField
                     label="Begin Remarks"
                     value={beginRemarks}
                     onChange={(value) => setBeginRemarks(value)}
@@ -410,27 +421,23 @@ export function TrainDetailPage() {
                     type="textarea"
                     config={trainConfig.trainInfo || { enabled: true, required: false, description: '' }}
                   />
-                  <FormField
-                    label="Before Departure"
-                    value={beforeDeparture}
-                    onChange={(value) => setBeforeDeparture(value)}
-                    type="text"
-                    config={trainConfig.beforeDeparture || { enabled: true, required: false, description: '' }}
-                  />
-                  <FormField
-                    label="After Arrive"
-                    value={afterArrive}
-                    onChange={(value) => setAfterArrive(value)}
-                    type="text"
-                    config={trainConfig.afterArrive || { enabled: true, required: false, description: '' }}
-                  />
-                  <FormField
-                    label="Next Train ID"
-                    value={nextTrainId}
-                    onChange={(value) => setNextTrainId(value)}
-                    type="text"
-                    config={trainConfig.nextTrainId || { enabled: true, required: false, description: '' }}
-                  />
+                  <FormControl fullWidth>
+                    <InputLabel>Next Train ID</InputLabel>
+                    <Select
+                      value={nextTrainId}
+                      onChange={(e) => setNextTrainId(e.target.value)}
+                      label="Next Train ID"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      {work.Trains.map((t, idx) => (
+                        <MenuItem key={t.Id || idx} value={t.Id || idx.toString()}>
+                          {t.TrainNumber}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Stack>
               )}
             </Box>

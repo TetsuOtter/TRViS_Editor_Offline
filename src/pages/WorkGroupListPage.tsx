@@ -14,6 +14,8 @@ import {
   IconButton,
   Grid,
   Stack,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -71,6 +73,8 @@ export function WorkGroupListPage() {
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [createTabIndex, setCreateTabIndex] = useState(0);
+  const [editTabIndex, setEditTabIndex] = useState(0);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [workGroupName, setWorkGroupName] = useState('');
   const [stationDialogOpen, setStationDialogOpen] = useState(false);
@@ -85,6 +89,7 @@ export function WorkGroupListPage() {
       };
       addWorkGroup(newWG);
       setWorkGroupName('');
+      setCreateTabIndex(0);
       setCreateDialogOpen(false);
     }
   };
@@ -95,6 +100,7 @@ export function WorkGroupListPage() {
       updateWorkGroup(editingIndex, { ...wg, Name: workGroupName });
       setWorkGroupName('');
       setEditingIndex(null);
+      setEditTabIndex(0);
       setEditDialogOpen(false);
     }
   };
@@ -102,6 +108,7 @@ export function WorkGroupListPage() {
   const handleOpenEdit = (index: number) => {
     setEditingIndex(index);
     setWorkGroupName(workGroups[index].Name);
+    setEditTabIndex(0);
     setEditDialogOpen(true);
   };
 
@@ -246,22 +253,40 @@ export function WorkGroupListPage() {
       )}
 
       {/* Create Dialog */}
-      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} fullWidth>
+      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Create New WorkGroup</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            fullWidth
-            label="WorkGroup Name"
-            value={workGroupName}
-            onChange={(e) => setWorkGroupName(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleCreate();
-              }
-            }}
-            sx={{ mt: 2 }}
-          />
+          <Box sx={{ mt: 2 }}>
+            <Tabs value={createTabIndex} onChange={(_, value) => setCreateTabIndex(value)}>
+              <Tab label="Basic" />
+              <Tab label="Advanced" />
+            </Tabs>
+
+            <Box sx={{ mt: 2 }}>
+              {createTabIndex === 0 && (
+                <TextField
+                  autoFocus
+                  fullWidth
+                  label="WorkGroup Name"
+                  value={workGroupName}
+                  onChange={(e) => setWorkGroupName(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleCreate();
+                    }
+                  }}
+                />
+              )}
+
+              {createTabIndex === 1 && (
+                <Stack spacing={2}>
+                  <Typography variant="body2" color="textSecondary">
+                    No additional properties available for WorkGroup
+                  </Typography>
+                </Stack>
+              )}
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
@@ -272,22 +297,40 @@ export function WorkGroupListPage() {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth>
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Edit WorkGroup</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            fullWidth
-            label="WorkGroup Name"
-            value={workGroupName}
-            onChange={(e) => setWorkGroupName(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleEdit();
-              }
-            }}
-            sx={{ mt: 2 }}
-          />
+          <Box sx={{ mt: 2 }}>
+            <Tabs value={editTabIndex} onChange={(_, value) => setEditTabIndex(value)}>
+              <Tab label="Basic" />
+              <Tab label="Advanced" />
+            </Tabs>
+
+            <Box sx={{ mt: 2 }}>
+              {editTabIndex === 0 && (
+                <TextField
+                  autoFocus
+                  fullWidth
+                  label="WorkGroup Name"
+                  value={workGroupName}
+                  onChange={(e) => setWorkGroupName(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleEdit();
+                    }
+                  }}
+                />
+              )}
+
+              {editTabIndex === 1 && (
+                <Stack spacing={2}>
+                  <Typography variant="body2" color="textSecondary">
+                    No additional properties available for WorkGroup
+                  </Typography>
+                </Stack>
+              )}
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
