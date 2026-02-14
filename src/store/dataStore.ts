@@ -210,12 +210,16 @@ export const useDataStore = create<DataState>((set, get) => ({
   syncWithProject: (projectId) => {
     const projectData = useProjectStore.getState().getProjectData(projectId);
     if (projectData) {
-      set({ workGroups: projectData.database });
+      set({ workGroups: projectData.database || [] });
     }
   },
 
-  saveToProject: (projectId) => {
+  saveToProject: async (projectId) => {
     const { workGroups } = get();
-    useProjectStore.getState().updateProjectData(projectId, workGroups);
+    try {
+      await useProjectStore.getState().updateProjectData(projectId, workGroups);
+    } catch (error) {
+      console.error('Failed to save data to project:', error);
+    }
   },
 }));

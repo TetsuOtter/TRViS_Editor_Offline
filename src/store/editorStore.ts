@@ -151,20 +151,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
   },
 
-  saveToProject: (projectId) => {
-    const metadata = get().getMetadata();
-    const projectStore = useProjectStore.getState();
-    const projectData = projectStore.getProjectData(projectId);
-
-    if (projectData) {
-      projectStore.updateProjectData(projectId, projectData.database);
-      // Note: The database update in projectStore happens via updateProjectData
-      // For metadata, we need a separate function, but for now we'll update it in place
-      const state = useProjectStore.getState();
-      const projects = state.projectData;
-      if (projects[projectId]) {
-        projects[projectId].metadata = metadata;
-      }
+  saveToProject: async (projectId) => {
+    try {
+      const metadata = get().getMetadata();
+      await useProjectStore.getState().updateProjectMetadata(projectId, metadata);
+    } catch (error) {
+      console.error('Failed to save metadata to project:', error);
     }
   },
 }));

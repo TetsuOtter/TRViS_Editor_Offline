@@ -1,10 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import { Box, AppBar, Toolbar, Drawer, List, ListItem, ListItemText, Typography, Divider, IconButton, Tooltip } from '@mui/material';
+import { Box, AppBar, Toolbar, Drawer, List, ListItem, ListItemText, Typography, Divider, IconButton, Tooltip, CircularProgress } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { useEffect } from 'react';
 import { useProjectStore } from './store/projectStore';
 import { useAutoSave } from './hooks/useAutoSave';
 import EditorPage from './pages/EditorPage';
 import SettingsPage from './pages/SettingsPage';
+import ThirdPartyLicensesPage from './pages/ThirdPartyLicensesPage';
 
 const drawerWidth = 280;
 
@@ -13,8 +15,31 @@ function AppContent() {
   const projects = useProjectStore((state) => state.projects);
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
   const setActiveProject = useProjectStore((state) => state.setActiveProject);
+  const isInitialized = useProjectStore((state) => state.isInitialized);
+  const initialize = useProjectStore((state) => state.initialize);
+
+  // Initialize store on mount
+  useEffect(() => {
+    initialize().catch(error => console.error('Failed to initialize projects:', error));
+  }, [initialize]);
 
   useAutoSave(true);
+
+  // Show loading state
+  if (!isInitialized) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   const activeProject = projects.find((p) => p.id === activeProjectId);
 
@@ -57,7 +82,7 @@ function AppContent() {
             projects.map((project) => (
               <ListItem
                 key={project.id}
-                onClick={() => setActiveProject(project.id)}
+                onClick={() => setActiveProject(project.id).catch(error => console.error('Failed to set active project:', error))}
                 sx={{
                   backgroundColor:
                     activeProjectId === project.id ? 'action.selected' : 'transparent',
@@ -102,6 +127,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<EditorPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/licenses" element={<ThirdPartyLicensesPage />} />
         </Routes>
       </Box>
     </Box>

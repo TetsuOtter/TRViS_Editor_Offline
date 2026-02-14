@@ -1,130 +1,304 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type { Project } from '../types/editor';
 import type { ProjectData } from '../types/storage';
 import type { Database } from '../types/trvis';
+import { IDataRepository } from '../data/types';
+import { repositoryFactory } from '../data/RepositoryFactory';
 
 interface ProjectState {
   projects: Project[];
   projectData: Record<string, ProjectData>;
   activeProjectId: string | null;
+  isInitialized: boolean;
+  isSyncing: boolean;
+
+  // Initialization
+  initialize: () => Promise<void>;
 
   // Actions
-  createProject: (name: string) => string;
-  deleteProject: (projectId: string) => void;
-  setActiveProject: (projectId: string) => void;
-  updateProjectData: (projectId: string, database: Database) => void;
+  createProject: (name: string) => Promise<string>;
+  deleteProject: (projectId: string) => Promise<void>;
+  setActiveProject: (projectId: string) => Promise<void>;
+  updateProjectData: (projectId: string, database: Database) => Promise<void>;
+  updateProjectMetadata: (projectId: string, metadata: any) => Promise<void>;
+
+  // Queries
   getActiveProjectData: () => ProjectData | null;
   getProject: (projectId: string) => Project | null;
   getProjectData: (projectId: string) => ProjectData | null;
+
+  // Sync
+  syncToRepository: () => Promise<void>;
+  reloadFromRepository: () => Promise<void>;
 }
 
-export const useProjectStore = create<ProjectState>()(
-  persist(
-    (set, get) => ({
-      projects: [],
-      projectData: {},
-      activeProjectId: null,
+/**
+ * Project Store with Repository Integration
+ *
+ * Uses IDataRepository abstraction to support both localStorage and future backend.
+ * Maintains Zustand state for UI reactivity while delegating persistence to repository.
+ */
+export const useProjectStore = create<ProjectState>((set, get) => {
+  let repository: IDataRepository | null = null;
 
-      createProject: (name: string) => {
-        const { projects, projectData } = get();
-        const projectId = crypto.randomUUID();
-        const now = Date.now();
+  const getRepository = async (): Promise<IDataRepository> => {
+    if (!repository) {
+      repository = repositoryFactory.getDefaultRepository();
+      const result = await repository.initialize();
+      if (!result.success) {
+        throw new Error(`Failed to initialize repository: ${result.error}`);
+      }
+    }
+    return repository;
+  };
 
-        const newProject: Project = {
-          id: projectId,
-          name,
-          createdAt: now,
-          lastModified: now,
-        };
+  return {
+    projects: [],
+    projectData: {},
+    activeProjectId: null,
+    isInitialized: false,
+    isSyncing: false,
 
-        const newProjectData: ProjectData = {
-          projectId,
-          name,
-          database: [],
-          metadata: {
-            stations: [],
-            lines: [],
-            trainTypePatterns: [],
-          },
-          createdAt: now,
-          lastModified: now,
-        };
+    initialize: async () => {
+      try {
+        const repo = await getRepository();
+        const result = await repo.loadStorageState();
+
+        if (!result.success) {
+          throw new Error(`Failed to load projects: ${result.error}`);
+        }
+
+        // Convert ProjectData array to record
+        const projectDataRecord: Record<string, ProjectData> = {};
+        for (const projectData of result.data.projectData) {
+          projectDataRecord[projectData.projectId] = projectData;
+        }
+
+        // Build Project array from ProjectData
+        const projects: Project[] = result.data.projectData.map(pd => ({
+          id: pd.projectId,
+          name: pd.name,
+          createdAt: pd.createdAt,
+          lastModified: pd.lastModified,
+        }));
 
         set({
-          projects: [...projects, newProject],
-          projectData: {
-            ...projectData,
-            [projectId]: newProjectData,
-          },
-          activeProjectId: projectId,
+          projects,
+          projectData: projectDataRecord,
+          activeProjectId: result.data.activeProjectId,
+          isInitialized: true,
         });
+      } catch (error) {
+        console.error('Failed to initialize project store:', error);
+        set({ isInitialized: true }); // Mark as initialized even on error
+      }
+    },
 
-        return projectId;
-      },
+    createProject: async (name: string) => {
+      const repo = await getRepository();
+      const projectId = crypto.randomUUID();
+      const now = Date.now();
 
-      deleteProject: (projectId: string) => {
-        const { projects, projectData, activeProjectId } = get();
+      const newProjectData: ProjectData = {
+        projectId,
+        name,
+        createdAt: now,
+        lastModified: now,
+        database: [],
+        metadata: {
+          stations: [],
+          lines: [],
+          trainTypePatterns: [],
+        },
+      };
 
-        const updatedProjects = projects.filter((p) => p.id !== projectId);
-        const updatedProjectData = { ...projectData };
+      const result = await repo.createProject(newProjectData);
+      if (!result.success) {
+        throw new Error(`Failed to create project: ${result.error}`);
+      }
+
+      // Update local state
+      set(state => ({
+        projects: [
+          ...state.projects,
+          {
+            id: projectId,
+            name,
+            createdAt: now,
+            lastModified: now,
+          },
+        ],
+        projectData: {
+          ...state.projectData,
+          [projectId]: newProjectData,
+        },
+        activeProjectId: projectId,
+      }));
+
+      return projectId;
+    },
+
+    deleteProject: async (projectId: string) => {
+      const repo = await getRepository();
+      const result = await repo.deleteProject(projectId);
+
+      if (!result.success) {
+        throw new Error(`Failed to delete project: ${result.error}`);
+      }
+
+      set(state => {
+        const updatedProjects = state.projects.filter(p => p.id !== projectId);
+        const updatedProjectData = { ...state.projectData };
         delete updatedProjectData[projectId];
 
-        let newActiveProjectId = activeProjectId;
-        if (activeProjectId === projectId) {
+        let newActiveProjectId = state.activeProjectId;
+        if (state.activeProjectId === projectId) {
           newActiveProjectId = updatedProjects.length > 0 ? updatedProjects[0].id : null;
         }
 
-        set({
+        return {
           projects: updatedProjects,
           projectData: updatedProjectData,
           activeProjectId: newActiveProjectId,
+        };
+      });
+    },
+
+    setActiveProject: async (projectId: string) => {
+      const { projects } = get();
+      if (!projects.find(p => p.id === projectId)) {
+        throw new Error(`Project ${projectId} not found`);
+      }
+
+      set({ activeProjectId: projectId });
+
+      // Persist to repository
+      const repo = await getRepository();
+      const state = get();
+      await repo.saveStorageState({
+        projectData: Object.values(state.projectData),
+        activeProjectId: projectId,
+      });
+    },
+
+    updateProjectData: async (projectId: string, database: Database) => {
+      const repo = await getRepository();
+      const { projectData } = get();
+      const current = projectData[projectId];
+
+      if (!current) {
+        throw new Error(`Project ${projectId} not found`);
+      }
+
+      const updated: ProjectData = {
+        ...current,
+        database,
+        lastModified: Date.now(),
+      };
+
+      const result = await repo.updateProject(projectId, updated);
+      if (!result.success) {
+        throw new Error(`Failed to update project: ${result.error}`);
+      }
+
+      set({
+        projectData: {
+          ...projectData,
+          [projectId]: updated,
+        },
+      });
+    },
+
+    updateProjectMetadata: async (projectId: string, metadata: any) => {
+      const repo = await getRepository();
+      const { projectData } = get();
+      const current = projectData[projectId];
+
+      if (!current) {
+        throw new Error(`Project ${projectId} not found`);
+      }
+
+      const updated: ProjectData = {
+        ...current,
+        metadata,
+        lastModified: Date.now(),
+      };
+
+      const result = await repo.updateProject(projectId, updated);
+      if (!result.success) {
+        throw new Error(`Failed to update project metadata: ${result.error}`);
+      }
+
+      set({
+        projectData: {
+          ...projectData,
+          [projectId]: updated,
+        },
+      });
+    },
+
+    getActiveProjectData: () => {
+      const { projectData, activeProjectId } = get();
+      if (!activeProjectId) return null;
+      return projectData[activeProjectId] || null;
+    },
+
+    getProject: (projectId: string) => {
+      const { projects } = get();
+      return projects.find(p => p.id === projectId) || null;
+    },
+
+    getProjectData: (projectId: string) => {
+      const { projectData } = get();
+      return projectData[projectId] || null;
+    },
+
+    syncToRepository: async () => {
+      if (!repository) return;
+
+      set({ isSyncing: true });
+      try {
+        const state = get();
+        const result = await repository.saveStorageState({
+          projectData: Object.values(state.projectData),
+          activeProjectId: state.activeProjectId,
         });
-      },
 
-      setActiveProject: (projectId: string) => {
-        const { projects } = get();
-        if (projects.find((p) => p.id === projectId)) {
-          set({ activeProjectId: projectId });
+        if (!result.success) {
+          throw new Error(`Sync failed: ${result.error}`);
         }
-      },
 
-      updateProjectData: (projectId: string, database: Database) => {
-        const { projectData } = get();
-        const current = projectData[projectId];
+        await repository.sync();
+      } finally {
+        set({ isSyncing: false });
+      }
+    },
 
-        if (current) {
-          set({
-            projectData: {
-              ...projectData,
-              [projectId]: {
-                ...current,
-                database,
-                lastModified: Date.now(),
-              },
-            },
-          });
-        }
-      },
+    reloadFromRepository: async () => {
+      const repo = await getRepository();
+      const result = await repo.loadStorageState();
 
-      getActiveProjectData: () => {
-        const { projectData, activeProjectId } = get();
-        if (!activeProjectId) return null;
-        return projectData[activeProjectId] || null;
-      },
+      if (!result.success) {
+        throw new Error(`Failed to reload projects: ${result.error}`);
+      }
 
-      getProject: (projectId: string) => {
-        const { projects } = get();
-        return projects.find((p) => p.id === projectId) || null;
-      },
+      const projectDataRecord: Record<string, ProjectData> = {};
+      for (const projectData of result.data.projectData) {
+        projectDataRecord[projectData.projectId] = projectData;
+      }
 
-      getProjectData: (projectId: string) => {
-        const { projectData } = get();
-        return projectData[projectId] || null;
-      },
-    }),
-    {
-      name: 'trvis-projects',
-    }
-  )
-);
+      const projects: Project[] = result.data.projectData.map(pd => ({
+        id: pd.projectId,
+        name: pd.name,
+        createdAt: pd.createdAt,
+        lastModified: pd.lastModified,
+      }));
+
+      set({
+        projects,
+        projectData: projectDataRecord,
+        activeProjectId: result.data.activeProjectId,
+      });
+    },
+  };
+});

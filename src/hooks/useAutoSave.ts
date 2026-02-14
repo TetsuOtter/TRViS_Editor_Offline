@@ -6,6 +6,7 @@ import { useProjectStore } from '../store/projectStore';
 /**
  * Hook that automatically saves data to the active project
  * when workGroups or metadata changes
+ * Integrates with repository layer for backend-ready persistence
  */
 export function useAutoSave(enabled: boolean = true) {
   const workGroups = useDataStore((state) => state.workGroups);
@@ -19,9 +20,15 @@ export function useAutoSave(enabled: boolean = true) {
   useEffect(() => {
     if (!enabled || !activeProjectId) return;
 
-    // Small delay to batch updates
-    const timer = setTimeout(() => {
-      useDataStore.getState().saveToProject(activeProjectId);
+    // Batch updates with small delay
+    const timer = setTimeout(async () => {
+      try {
+        // Save both data and metadata
+        await useDataStore.getState().saveToProject(activeProjectId);
+        await useEditorStore.getState().saveToProject(activeProjectId);
+      } catch (error) {
+        console.error('Auto-save failed:', error);
+      }
     }, 500);
 
     return () => clearTimeout(timer);

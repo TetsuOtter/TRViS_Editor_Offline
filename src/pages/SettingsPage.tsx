@@ -1,9 +1,13 @@
 import { Box, Typography, Card, CardContent, Button, Stack, Alert } from '@mui/material';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import GavelIcon from '@mui/icons-material/Gavel';
+import { useNavigate } from 'react-router-dom';
 import { JsonImport } from '../components/ImportExport/JsonImport';
 import { AppLinkButton } from '../components/ImportExport/AppLinkButton';
 
 function SettingsPage() {
+  const navigate = useNavigate();
+
   const handleExportStorage = () => {
     const allData = localStorage;
     const dataObj: Record<string, unknown> = {};
@@ -117,6 +121,24 @@ function SettingsPage() {
                 their associated settings.
               </Typography>
             </Alert>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Third Party Licenses
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+              View the licenses of all open-source packages used in this application.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<GavelIcon />}
+              onClick={() => navigate('/licenses')}
+            >
+              View Licenses
+            </Button>
           </CardContent>
         </Card>
       </Stack>
