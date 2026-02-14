@@ -14,6 +14,8 @@ export interface ProjectData {
   lastModified: number;
 }
 
+export type Project = ProjectData;
+
 export interface StorageState {
   projectData: ProjectData[];
   activeProjectId: string | null;

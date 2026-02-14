@@ -55,8 +55,8 @@ export class LocalStorageAdapter implements IDataRepository {
   async getProjects(): Promise<Result<ProjectData[]>> {
     try {
       const state = await this.loadStorageState();
-      if (!state.success) return state;
-      return { success: true, data: state.data.projectData };
+      if (!state.success) return { success: false, error: state.error };
+      return { success: true, data: state.data!.projectData };
     } catch (error) {
       return { success: false, error: `Failed to get projects: ${String(error)}` };
     }
@@ -65,9 +65,9 @@ export class LocalStorageAdapter implements IDataRepository {
   async getProject(projectId: string): Promise<Result<ProjectData>> {
     try {
       const state = await this.loadStorageState();
-      if (!state.success) return state;
+      if (!state.success) return { success: false, error: state.error };
 
-      const project = state.data.projectData.find(p => p.projectId === projectId);
+      const project = state.data!.projectData.find(p => p.projectId === projectId);
       if (!project) {
         return { success: false, error: `Project ${projectId} not found` };
       }
@@ -80,16 +80,16 @@ export class LocalStorageAdapter implements IDataRepository {
   async createProject(project: ProjectData): Promise<Result<ProjectData>> {
     try {
       const state = await this.loadStorageState();
-      if (!state.success) return state;
+      if (!state.success) return { success: false, error: state.error };
 
       // Check for duplicate
-      if (state.data.projectData.some(p => p.projectId === project.projectId)) {
+      if (state.data!.projectData.some(p => p.projectId === project.projectId)) {
         return { success: false, error: `Project ${project.projectId} already exists` };
       }
 
-      state.data.projectData.push(project);
-      const saveResult = await this.saveStorageState(state.data);
-      if (!saveResult.success) return saveResult;
+      state.data!.projectData.push(project);
+      const saveResult = await this.saveStorageState(state.data!);
+      if (!saveResult.success) return { success: false, error: saveResult.error };
 
       this.markPendingChange();
       return { success: true, data: project };
@@ -101,16 +101,16 @@ export class LocalStorageAdapter implements IDataRepository {
   async updateProject(projectId: string, project: ProjectData): Promise<Result<ProjectData>> {
     try {
       const state = await this.loadStorageState();
-      if (!state.success) return state;
+      if (!state.success) return { success: false, error: state.error };
 
-      const index = state.data.projectData.findIndex(p => p.projectId === projectId);
+      const index = state.data!.projectData.findIndex(p => p.projectId === projectId);
       if (index === -1) {
         return { success: false, error: `Project ${projectId} not found` };
       }
 
-      state.data.projectData[index] = project;
-      const saveResult = await this.saveStorageState(state.data);
-      if (!saveResult.success) return saveResult;
+      state.data!.projectData[index] = project;
+      const saveResult = await this.saveStorageState(state.data!);
+      if (!saveResult.success) return { success: false, error: saveResult.error };
 
       this.markPendingChange();
       return { success: true, data: project };
@@ -122,9 +122,9 @@ export class LocalStorageAdapter implements IDataRepository {
   async updateProjectPartial(projectId: string, updates: Partial<ProjectData>): Promise<Result<ProjectData>> {
     try {
       const getResult = await this.getProject(projectId);
-      if (!getResult.success) return getResult;
+      if (!getResult.success) return { success: false, error: getResult.error };
 
-      const updatedProject = { ...getResult.data, ...updates };
+      const updatedProject: ProjectData = { ...getResult.data!, ...updates };
       return this.updateProject(projectId, updatedProject);
     } catch (error) {
       return { success: false, error: `Failed to partially update project: ${String(error)}` };
@@ -134,22 +134,22 @@ export class LocalStorageAdapter implements IDataRepository {
   async deleteProject(projectId: string): Promise<Result<void>> {
     try {
       const state = await this.loadStorageState();
-      if (!state.success) return state;
+      if (!state.success) return { success: false, error: state.error };
 
-      const initialLength = state.data.projectData.length;
-      state.data.projectData = state.data.projectData.filter(p => p.projectId !== projectId);
+      const initialLength = state.data!.projectData.length;
+      state.data!.projectData = state.data!.projectData.filter(p => p.projectId !== projectId);
 
-      if (state.data.projectData.length === initialLength) {
+      if (state.data!.projectData.length === initialLength) {
         return { success: false, error: `Project ${projectId} not found` };
       }
 
       // Update active project if it was deleted
-      if (state.data.activeProjectId === projectId) {
-        state.data.activeProjectId = state.data.projectData[0]?.projectId || null;
+      if (state.data!.activeProjectId === projectId) {
+        state.data!.activeProjectId = state.data!.projectData[0]?.projectId || null;
       }
 
-      const saveResult = await this.saveStorageState(state.data);
-      if (!saveResult.success) return saveResult;
+      const saveResult = await this.saveStorageState(state.data!);
+      if (!saveResult.success) return { success: false, error: saveResult.error };
 
       this.markPendingChange();
       return { success: true, data: undefined };

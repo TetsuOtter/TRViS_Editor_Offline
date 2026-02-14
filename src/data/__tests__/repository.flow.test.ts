@@ -68,7 +68,7 @@ describe('Data Flow: UI → Store → Repository', () => {
               {
                 Id: uuidv4(),
                 TrainNumber: 'LX001',
-                Direction: 1,
+                Direction: 1 as 1 | -1,
                 MaxSpeed: 100,
                 CarCount: 6,
                 TimetableRows: [
@@ -274,7 +274,7 @@ describe('Data Flow: UI → Store → Repository', () => {
               {
                 Id: uuidv4(),
                 TrainNumber: 'TEST001',
-                Direction: 1,
+                Direction: 1 as 1 | -1,
                 MaxSpeed: 120,
                 CarCount: 8,
                 TimetableRows: [

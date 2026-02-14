@@ -13,7 +13,7 @@ export class RepositoryFactory implements IRepositoryFactory {
   private static instance: RepositoryFactory;
   private repositories: Map<string, IDataRepository> = new Map();
 
-  private constructor() {}
+  constructor() {}
 
   static getInstance(): RepositoryFactory {
     if (!RepositoryFactory.instance) {

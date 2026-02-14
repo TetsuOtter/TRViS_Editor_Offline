@@ -3,6 +3,8 @@ import { generateTimetableFromPattern, validatePatternForLine } from './trainGen
 import { mockStations, mockLine, mockTrainTypePattern } from '../test/fixtures'
 import type { TrainTypePattern, Line } from '../types/editor'
 
+declare const global: typeof globalThis
+
 // Mock crypto.getRandomValues for consistent IDs in tests
 const mockGetRandomValues = vi.fn()
 Object.defineProperty(global, 'crypto', {

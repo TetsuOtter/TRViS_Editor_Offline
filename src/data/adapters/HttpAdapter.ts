@@ -80,8 +80,8 @@ export class HttpAdapter implements IDataRepository {
         'GET',
         '/api/projects'
       );
-      if (!result.success) return result;
-      return { success: true, data: result.data.projects };
+      if (!result.success) return { success: false, error: result.error };
+      return { success: true, data: result.data!.projects };
     } catch (error) {
       return { success: false, error: `Failed to get projects: ${String(error)}` };
     }
@@ -145,7 +145,7 @@ export class HttpAdapter implements IDataRepository {
       const getResult = await this.getProject(projectId);
       if (!getResult.success) return getResult;
 
-      const updatedProject = { ...getResult.data, ...updates };
+      const updatedProject = { ...getResult.data!, ...updates };
       return this.updateProject(projectId, updatedProject);
     } catch (error) {
       return { success: false, error: `Failed to partially update project: ${String(error)}` };
@@ -183,13 +183,13 @@ export class HttpAdapter implements IDataRepository {
   async getAllProjects(): Promise<Result<StorageState>> {
     try {
       const projectsResult = await this.getProjects();
-      if (!projectsResult.success) return projectsResult;
+      if (!projectsResult.success) return { success: false, error: projectsResult.error };
 
       return {
         success: true,
         data: {
-          projectData: projectsResult.data,
-          activeProjectId: projectsResult.data[0]?.projectId || null,
+          projectData: projectsResult.data!,
+          activeProjectId: projectsResult.data![0]?.projectId || null,
         },
       };
     } catch (error) {
@@ -235,7 +235,7 @@ export class HttpAdapter implements IDataRepository {
         if (!result.success) {
           this.syncStatus.isSynced = false;
           this.syncStatus.syncError = result.error;
-          if (this.onSyncError) {
+          if (this.onSyncError && result.error) {
             this.onSyncError(result.error);
           }
           return result;
@@ -335,7 +335,7 @@ export class HttpAdapter implements IDataRepository {
             '/api/projects',
             operation.data
           );
-          return result.success ? { success: true, data: undefined } : result;
+          return result.success ? { success: true, data: undefined } : { success: false, error: result.error };
         }
         return { success: true, data: undefined };
 
@@ -346,14 +346,14 @@ export class HttpAdapter implements IDataRepository {
             `/api/projects/${operation.projectId}`,
             operation.data
           );
-          return result.success ? { success: true, data: undefined } : result;
+          return result.success ? { success: true, data: undefined } : { success: false, error: result.error };
         }
         return { success: true, data: undefined };
 
       case 'delete':
         if (operation.projectId) {
           const result = await this.makeRequest<void>('DELETE', `/api/projects/${operation.projectId}`);
-          return result;
+          return result.success ? result : { success: false, error: result.error };
         }
         return { success: true, data: undefined };
 

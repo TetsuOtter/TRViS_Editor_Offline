@@ -74,3 +74,16 @@ export interface WorkGroup {
 }
 
 export type Database = WorkGroup[];
+
+export interface TRViSData {
+  railway: {
+    name: string;
+    stations: Array<{
+      name: string;
+      fullName?: string;
+      longitude?: number;
+      latitude?: number;
+    }>;
+  };
+  workGroups: WorkGroup[];
+}

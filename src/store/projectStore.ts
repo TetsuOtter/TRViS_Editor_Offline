@@ -72,12 +72,12 @@ export const useProjectStore = create<ProjectState>((set, get) => {
 
         // Convert ProjectData array to record
         const projectDataRecord: Record<string, ProjectData> = {};
-        for (const projectData of result.data.projectData) {
+        for (const projectData of result.data!.projectData) {
           projectDataRecord[projectData.projectId] = projectData;
         }
 
         // Build Project array from ProjectData
-        const projects: Project[] = result.data.projectData.map(pd => ({
+        const projects: Project[] = result.data!.projectData.map(pd => ({
           id: pd.projectId,
           name: pd.name,
           createdAt: pd.createdAt,
@@ -87,7 +87,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         set({
           projects,
           projectData: projectDataRecord,
-          activeProjectId: result.data.activeProjectId,
+          activeProjectId: result.data!.activeProjectId,
           isInitialized: true,
         });
       } catch (error) {
@@ -290,11 +290,11 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       }
 
       const projectDataRecord: Record<string, ProjectData> = {};
-      for (const projectData of result.data.projectData) {
+      for (const projectData of result.data!.projectData) {
         projectDataRecord[projectData.projectId] = projectData;
       }
 
-      const projects: Project[] = result.data.projectData.map(pd => ({
+      const projects: Project[] = result.data!.projectData.map(pd => ({
         id: pd.projectId,
         name: pd.name,
         createdAt: pd.createdAt,
@@ -304,7 +304,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       set({
         projects,
         projectData: projectDataRecord,
-        activeProjectId: result.data.activeProjectId,
+        activeProjectId: result.data!.activeProjectId,
       });
     },
   };

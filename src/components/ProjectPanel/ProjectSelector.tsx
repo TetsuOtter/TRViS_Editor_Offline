@@ -101,10 +101,11 @@ export function ProjectSelector() {
             startIcon={<AddIcon />}
             onClick={() => setCreateDialogOpen(true)}
             fullWidth
+            sx={{ textTransform: 'none' }}
           >
             New Project
           </Button>
-          <Button variant="outlined" startIcon={<UploadIcon />} component="label" fullWidth>
+          <Button variant="outlined" startIcon={<UploadIcon />} component="label" fullWidth sx={{ textTransform: 'none' }}>
             Import JSON
             <input
               hidden
@@ -124,6 +125,7 @@ export function ProjectSelector() {
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={() => setCreateDialogOpen(true)}
+                sx={{ textTransform: 'none' }}
               >
                 Create Your First Project
               </Button>

@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { LocalStorageAdapter } from '../adapters/LocalStorageAdapter';
-import { ProjectData, StorageState } from '../../types/storage';
+import type { ProjectData, StorageState } from '../../types/storage';
 import { v4 as uuidv4 } from 'uuid';
 
 describe('LocalStorageAdapter', () => {
@@ -29,7 +29,7 @@ describe('LocalStorageAdapter', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    adapter = new LocalStorageAdapter({ storageKey });
+    adapter = new LocalStorageAdapter({ storageKey, type: 'localStorage' });
   });
 
   afterEach(() => {
@@ -50,11 +50,11 @@ describe('LocalStorageAdapter', () => {
         throw new Error('localStorage unavailable');
       });
 
-      const adapter2 = new LocalStorageAdapter({ storageKey });
+      const adapter2 = new LocalStorageAdapter({ storageKey, type: 'localStorage' });
       const result = await adapter2.initialize();
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('localStorage is not available');
+      expect(result.error!).toContain('localStorage is not available');
 
       setItemSpy.mockRestore();
     });
@@ -63,7 +63,7 @@ describe('LocalStorageAdapter', () => {
       localStorage.setItem(storageKey, 'invalid json{');
       const result = await adapter.initialize();
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Corrupted');
+      expect(result.error!).toContain('Corrupted');
     });
   });
 
@@ -78,7 +78,7 @@ describe('LocalStorageAdapter', () => {
         const result = await adapter.createProject(project);
 
         expect(result.success).toBe(true);
-        expect(result.data).toEqual(project);
+        expect(result.data!).toEqual(project);
       });
 
       it('should persist project to localStorage', async () => {
@@ -87,7 +87,7 @@ describe('LocalStorageAdapter', () => {
 
         const state = await adapter.loadStorageState();
         expect(state.success).toBe(true);
-        expect(state.data.projectData).toContainEqual(project);
+        expect(state.data!.projectData).toContainEqual(project);
       });
 
       it('should reject duplicate projects', async () => {
@@ -96,7 +96,7 @@ describe('LocalStorageAdapter', () => {
 
         const result = await adapter.createProject(project);
         expect(result.success).toBe(false);
-        expect(result.error).toContain('already exists');
+        expect(result.error!).toContain('already exists');
       });
 
       it('should increment pending changes count', async () => {
@@ -115,13 +115,13 @@ describe('LocalStorageAdapter', () => {
 
         const result = await adapter.getProject(project.projectId);
         expect(result.success).toBe(true);
-        expect(result.data).toEqual(project);
+        expect(result.data!).toEqual(project);
       });
 
       it('should return error for non-existent project', async () => {
         const result = await adapter.getProject('non-existent-id');
         expect(result.success).toBe(false);
-        expect(result.error).toContain('not found');
+        expect(result.error!).toContain('not found');
       });
     });
 
@@ -135,15 +135,15 @@ describe('LocalStorageAdapter', () => {
 
         const result = await adapter.getProjects();
         expect(result.success).toBe(true);
-        expect(result.data).toHaveLength(2);
-        expect(result.data).toContainEqual(project1);
-        expect(result.data).toContainEqual(project2);
+        expect(result.data!).toHaveLength(2);
+        expect(result.data!).toContainEqual(project1);
+        expect(result.data!).toContainEqual(project2);
       });
 
       it('should return empty array when no projects exist', async () => {
         const result = await adapter.getProjects();
         expect(result.success).toBe(true);
-        expect(result.data).toEqual([]);
+        expect(result.data!).toEqual([]);
       });
     });
 
@@ -156,7 +156,7 @@ describe('LocalStorageAdapter', () => {
         const result = await adapter.updateProject(project.projectId, updated);
 
         expect(result.success).toBe(true);
-        expect(result.data.name).toBe('Updated Name');
+        expect(result.data!.name).toBe('Updated Name');
       });
 
       it('should persist updates to localStorage', async () => {
@@ -167,7 +167,8 @@ describe('LocalStorageAdapter', () => {
         await adapter.updateProject(project.projectId, updated);
 
         const retrieved = await adapter.getProject(project.projectId);
-        expect(retrieved.data.name).toBe('Updated Name');
+        expect(retrieved.success).toBe(true);
+        expect(retrieved.data!.name).toBe('Updated Name');
       });
 
       it('should return error for non-existent project', async () => {
@@ -175,7 +176,7 @@ describe('LocalStorageAdapter', () => {
         const result = await adapter.updateProject('non-existent-id', project);
 
         expect(result.success).toBe(false);
-        expect(result.error).toContain('not found');
+        expect(result.error!).toContain('not found');
       });
     });
 
@@ -189,8 +190,8 @@ describe('LocalStorageAdapter', () => {
         });
 
         expect(result.success).toBe(true);
-        expect(result.data.name).toBe('Partial Update');
-        expect(result.data.projectId).toBe(project.projectId); // Other fields preserved
+        expect(result.data!.name).toBe('Partial Update');
+        expect(result.data!.projectId).toBe(project.projectId); // Other fields preserved
       });
 
       it('should merge updates with existing data', async () => {
@@ -203,8 +204,9 @@ describe('LocalStorageAdapter', () => {
         });
 
         const retrieved = await adapter.getProject(project.projectId);
-        expect(retrieved.data.name).toBe('Modified');
-        expect(retrieved.data.projectId).toBe(project.projectId);
+        expect(retrieved.success).toBe(true);
+        expect(retrieved.data!.name).toBe('Modified');
+        expect(retrieved.data!.projectId).toBe(project.projectId);
       });
     });
 
@@ -230,7 +232,7 @@ describe('LocalStorageAdapter', () => {
       it('should return error for non-existent project', async () => {
         const result = await adapter.deleteProject('non-existent-id');
         expect(result.success).toBe(false);
-        expect(result.error).toContain('not found');
+        expect(result.error!).toContain('not found');
       });
 
       it('should clear active project if it was deleted', async () => {
@@ -242,14 +244,16 @@ describe('LocalStorageAdapter', () => {
 
         // Set project1 as active
         const state = await adapter.loadStorageState();
-        state.data.activeProjectId = project1.projectId;
-        await adapter.saveStorageState(state.data);
+        expect(state.success).toBe(true);
+        state.data!.activeProjectId = project1.projectId;
+        await adapter.saveStorageState(state.data!);
 
         // Delete active project
         await adapter.deleteProject(project1.projectId);
 
         const newState = await adapter.loadStorageState();
-        expect(newState.data.activeProjectId).not.toBe(project1.projectId);
+        expect(newState.success).toBe(true);
+        expect(newState.data!.activeProjectId).not.toBe(project1.projectId);
       });
     });
 
@@ -260,13 +264,13 @@ describe('LocalStorageAdapter', () => {
 
         const result = await adapter.projectExists(project.projectId);
         expect(result.success).toBe(true);
-        expect(result.data).toBe(true);
+        expect(result.data!).toBe(true);
       });
 
       it('should return false for non-existent project', async () => {
         const result = await adapter.projectExists('non-existent-id');
         expect(result.success).toBe(true);
-        expect(result.data).toBe(false);
+        expect(result.data!).toBe(false);
       });
     });
   });
@@ -286,7 +290,7 @@ describe('LocalStorageAdapter', () => {
 
         const result = await adapter.getAllProjects();
         expect(result.success).toBe(true);
-        expect(result.data.projectData).toHaveLength(2);
+        expect(result.data!.projectData).toHaveLength(2);
       });
     });
 
@@ -302,7 +306,7 @@ describe('LocalStorageAdapter', () => {
         expect(result.success).toBe(true);
 
         const retrieved = await adapter.loadStorageState();
-        expect(retrieved.data).toEqual(state);
+        expect(retrieved.data!).toEqual(state);
       });
 
       it('should handle save errors', async () => {
@@ -317,7 +321,7 @@ describe('LocalStorageAdapter', () => {
 
         const result = await adapter.saveStorageState(state);
         expect(result.success).toBe(false);
-        expect(result.error).toContain('Storage full');
+        expect(result.error!).toContain('Storage full');
 
         setItemSpy.mockRestore();
       });
@@ -335,14 +339,14 @@ describe('LocalStorageAdapter', () => {
         const result = await adapter.loadStorageState();
 
         expect(result.success).toBe(true);
-        expect(result.data).toEqual(state);
+        expect(result.data!).toEqual(state);
       });
 
       it('should return empty state when no data exists', async () => {
         const result = await adapter.loadStorageState();
         expect(result.success).toBe(true);
-        expect(result.data.projectData).toEqual([]);
-        expect(result.data.activeProjectId).toBeNull();
+        expect(result.data!.projectData).toEqual([]);
+        expect(result.data!.activeProjectId).toBeNull();
       });
 
       it('should handle corrupted data', async () => {
@@ -350,7 +354,7 @@ describe('LocalStorageAdapter', () => {
 
         const result = await adapter.loadStorageState();
         expect(result.success).toBe(false);
-        expect(result.error).toContain('Failed to load');
+        expect(result.error!).toContain('Failed to load');
       });
     });
   });
@@ -394,7 +398,7 @@ describe('LocalStorageAdapter', () => {
 
   describe('isReady check', () => {
     it('should return false before initialization', () => {
-      const newAdapter = new LocalStorageAdapter({ storageKey });
+      const newAdapter = new LocalStorageAdapter({ storageKey, type: 'localStorage' });
       expect(newAdapter.isReady()).toBe(false);
     });
 
@@ -428,7 +432,7 @@ describe('LocalStorageAdapter', () => {
       }
 
       const result = await adapter.getProjects();
-      expect(result.data).toHaveLength(3);
+      expect(result.data!).toHaveLength(3);
 
       // Update one
       projects[0].name = 'Updated Project 1';
@@ -438,8 +442,9 @@ describe('LocalStorageAdapter', () => {
       await adapter.deleteProject(projects[1].projectId);
 
       const final = await adapter.getProjects();
-      expect(final.data).toHaveLength(2);
-      expect(final.data[0].name).toBe('Updated Project 1');
+      expect(final.success).toBe(true);
+      expect(final.data!).toHaveLength(2);
+      expect(final.data![0].name).toBe('Updated Project 1');
     });
 
     it('should preserve data across adapter recreation', async () => {
@@ -447,12 +452,12 @@ describe('LocalStorageAdapter', () => {
       await adapter.createProject(project);
 
       // Create new adapter with same storage key
-      const newAdapter = new LocalStorageAdapter({ storageKey });
+      const newAdapter = new LocalStorageAdapter({ storageKey, type: 'localStorage' });
       await newAdapter.initialize();
 
       const result = await newAdapter.getProject(project.projectId);
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(project);
+      expect(result.data!).toEqual(project);
     });
   });
 });

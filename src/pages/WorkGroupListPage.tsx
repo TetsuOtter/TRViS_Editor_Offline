@@ -13,6 +13,7 @@ import {
   Typography,
   IconButton,
   Grid,
+  Stack,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -20,6 +21,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import MapIcon from '@mui/icons-material/Map';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDataStore } from '../store/dataStore';
 import { useProjectStore } from '../store/projectStore';
@@ -53,6 +55,19 @@ export function WorkGroupListPage() {
       syncEditorWithProject(projectId);
     }
   }, [projectId, setActiveProject, syncWithProject, syncEditorWithProject]);
+
+  const handleDownloadJSON = () => {
+    const jsonData = JSON.stringify(workGroups, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `workgroups-${activeProject?.name || 'unnamed'}-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -126,25 +141,36 @@ export function WorkGroupListPage() {
           variant="outlined"
           startIcon={<ApartmentIcon />}
           onClick={() => setStationDialogOpen(true)}
+          sx={{ textTransform: 'none' }}
         >
           Stations
         </Button>
-        <Button variant="outlined" startIcon={<MapIcon />} onClick={() => setLineDialogOpen(true)}>
+        <Button variant="outlined" startIcon={<MapIcon />} onClick={() => setLineDialogOpen(true)} sx={{ textTransform: 'none' }}>
           Lines
         </Button>
       </Box>
 
-      {/* AppLink for TRViS App */}
+      {/* Open In TRViS App */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            AppLink for TRViS App
+            Open In TRViS App
           </Typography>
           <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
             Generate an AppLink that can be shared with the TRViS app to load your timetable
             data directly.
           </Typography>
-          <AppLinkButton />
+          <Stack direction="row" spacing={2}>
+            <AppLinkButton />
+            <Button
+              variant="outlined"
+              startIcon={<CloudDownloadIcon />}
+              onClick={handleDownloadJSON}
+              sx={{ textTransform: 'none', flex: 1 }}
+            >
+              Download as JSON
+            </Button>
+          </Stack>
         </CardContent>
       </Card>
 
@@ -154,6 +180,7 @@ export function WorkGroupListPage() {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => setCreateDialogOpen(true)}
+          sx={{ textTransform: 'none' }}
         >
           Create WorkGroup
         </Button>

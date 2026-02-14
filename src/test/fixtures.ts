@@ -1,6 +1,6 @@
-import { Project, WorkGroup, Work, Train, TimetableRow } from '../types/storage'
 import type { Station, Line, TrainTypePattern } from '../types/editor'
-import { TRViSData } from '../types/trvis'
+import type { Project } from '../types/storage'
+import type { TRViSData, WorkGroup, Work, Train, TimetableRow } from '../types/trvis'
 
 // Sample stations
 export const mockStations: Station[] = [
@@ -51,70 +51,65 @@ export const mockTrainTypePattern: TrainTypePattern = {
 
 // Sample project
 export const mockProject: Project = {
-  id: 'proj-1',
+  projectId: 'proj-1',
   name: 'テストプロジェクト',
-  description: 'E2Eテスト用のサンプルプロジェクト',
-  createdAt: '2026-02-13T00:00:00.000Z',
-  updatedAt: '2026-02-13T00:00:00.000Z',
+  database: [],
+  metadata: {
+    stations: [],
+    lines: [],
+    trainTypePatterns: [],
+  },
+  createdAt: Date.now(),
+  lastModified: Date.now(),
 }
 
 // Sample work group
 export const mockWorkGroup: WorkGroup = {
-  id: 'wg-1',
-  name: '平日ダイヤ',
-  description: '平日運行ダイヤ',
-  projectId: 'proj-1',
+  Id: 'wg-1',
+  Name: '平日ダイヤ',
+  Works: [],
 }
 
 // Sample work
 export const mockWork: Work = {
-  id: 'work-1',
-  workGroupId: 'wg-1',
-  affectDate: '20260213',
-  name: '平日運行',
-  remarks: '',
+  Id: 'work-1',
+  Name: '平日運行',
+  AffectDate: '20260213',
+  Trains: [],
 }
 
 // Sample train
 export const mockTrain: Train = {
-  id: 'train-1',
-  workId: 'work-1',
-  trainNumber: '001',
-  maxSpeed: 120,
-  carCount: 10,
-  destination: '品川',
-  direction: 1,
-  workType: '',
+  TrainNumber: '001',
+  MaxSpeed: 120,
+  CarCount: 10,
+  Destination: '品川',
+  Direction: 1 as 1 | -1,
+  TimetableRows: [],
 }
 
 // Sample timetable rows
 export const mockTimetableRows: TimetableRow[] = [
   {
-    id: 'row-1',
-    trainId: 'train-1',
-    stationId: 'st-1',
-    arrivalTime: '',
-    departureTime: '06:00:00',
-    track: '1',
-    stopType: 0,
+    StationName: '東京',
+    Location_m: 0,
+    Arrive: null,
+    Departure: '06:00:00',
+    TrackName: '1',
   },
   {
-    id: 'row-2',
-    trainId: 'train-1',
-    stationId: 'st-3',
-    arrivalTime: '06:03:00',
-    departureTime: '06:03:30',
-    track: '1',
-    stopType: 0,
+    StationName: '品川',
+    Location_m: 5000,
+    Arrive: '06:05:00',
+    Departure: '06:06:00',
+    TrackName: '1',
   },
   {
-    id: 'row-3',
-    trainId: 'train-1',
-    stationId: 'st-2',
-    arrivalTime: '06:07:30',
-    departureTime: '',
-    track: '2',
-    stopType: 0,
+    StationName: '新横浜',
+    Location_m: 25000,
+    Arrive: '06:20:00',
+    Departure: null,
+    TrackName: '2',
   },
 ]
 
@@ -131,28 +126,19 @@ export const mockTRViSData: TRViSData = {
   },
   workGroups: [
     {
-      name: mockWorkGroup.name,
-      description: mockWorkGroup.description,
-      works: [
+      Name: mockWorkGroup.Name,
+      Works: [
         {
-          affectDate: mockWork.affectDate,
-          name: mockWork.name,
-          remarks: mockWork.remarks,
-          trains: [
+          AffectDate: mockWork.AffectDate,
+          Name: mockWork.Name,
+          Trains: [
             {
-              trainNumber: mockTrain.trainNumber,
-              maxSpeed: mockTrain.maxSpeed,
-              carCount: mockTrain.carCount,
-              destination: mockTrain.destination,
-              direction: mockTrain.direction,
-              workType: mockTrain.workType,
-              timetableRows: mockTimetableRows.map(row => ({
-                stationName: mockStations.find(s => s.id === row.stationId)?.name || '',
-                arrivalTime: row.arrivalTime,
-                departureTime: row.departureTime,
-                track: row.track,
-                stopType: row.stopType,
-              })),
+              TrainNumber: mockTrain.TrainNumber,
+              MaxSpeed: mockTrain.MaxSpeed,
+              CarCount: mockTrain.CarCount,
+              Destination: mockTrain.Destination,
+              Direction: mockTrain.Direction,
+              TimetableRows: mockTimetableRows,
             },
           ],
         },

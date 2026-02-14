@@ -10,9 +10,11 @@ import type { ProjectData, StorageState } from '../types/storage';
 /**
  * Operation result type for handling success/failure cases
  */
-export type Result<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+export type Result<T> = {
+  success: boolean;
+  data?: T;
+  error?: string;
+};
 
 /**
  * Sync status tracking for data consistency

@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import { vi, beforeEach } from 'vitest'
 
 // Functional localStorage mock for tests
 class MockLocalStorage implements Storage {

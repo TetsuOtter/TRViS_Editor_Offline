@@ -81,7 +81,7 @@ describe('HttpAdapter', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data).toEqual(project);
+        expect(result.data!).toEqual(project);
       }
       expect(mockFetch).toHaveBeenCalledWith(
         `${baseUrl}/api/projects`,
@@ -164,7 +164,7 @@ describe('HttpAdapter', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data).toEqual(project);
+        expect(result.data!).toEqual(project);
       }
       expect(mockFetch).toHaveBeenCalledWith(
         `${baseUrl}/api/projects/${project.projectId}`,
@@ -463,7 +463,7 @@ describe('HttpAdapter', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.projectData).toEqual(projects);
+        expect(result.data!.projectData).toEqual(projects);
       }
     });
 
