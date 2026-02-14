@@ -60,21 +60,39 @@ describe('jsonIO', () => {
       expect(isValidDatabase(invalidWorkGroup)).toBe(false)
     })
 
-    it('should reject invalid work structure', () => {
-      const invalidWork = [
+    it('should accept work without AffectDate (optional field)', () => {
+      const workWithoutAffectDate = [
         {
           Name: 'Test WorkGroup',
           Works: [
             {
               Name: 'Test Work',
-              // Missing AffectDate
+              // AffectDate is optional
               Trains: []
             }
           ]
         }
       ]
 
-      expect(isValidDatabase(invalidWork)).toBe(false)
+      expect(isValidDatabase(workWithoutAffectDate)).toBe(true)
+    })
+
+    it('should reject empty AffectDate string', () => {
+      const invalidAffectDate = [
+        {
+          Name: 'Test WorkGroup',
+          Works: [
+            {
+              Name: 'Test Work',
+              AffectDate: '', // Empty string is invalid
+              Trains: []
+            }
+          ]
+        }
+      ]
+
+      expect(isValidDatabase(invalidAffectDate)).toBe(false)
+      expect(getValidationErrors().some(e => e.message.includes('AffectDate'))).toBe(true)
     })
 
     it('should reject invalid train structure', () => {

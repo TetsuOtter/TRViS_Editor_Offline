@@ -76,7 +76,10 @@ export function WorkGroupEditor() {
 
   const handleSaveWork = () => {
     if (!editingWork) return;
-    if (!editingWork.work.Name.trim() || !editingWork.work.AffectDate.trim()) {
+    if (!editingWork.work.Name.trim()) {
+      return;
+    }
+    if (editingWork.work.AffectDate !== undefined && !editingWork.work.AffectDate.trim()) {
       return;
     }
 

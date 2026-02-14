@@ -64,7 +64,7 @@ export function WorkListPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [workName, setWorkName] = useState('');
-  const [affectDate, setAffectDate] = useState('');
+  const [affectDate, setAffectDate] = useState<string | undefined>(undefined);
   const [remarks, setRemarks] = useState('');
   const [stationDialogOpen, setStationDialogOpen] = useState(false);
   const [lineDialogOpen, setLineDialogOpen] = useState(false);
@@ -83,7 +83,7 @@ export function WorkListPage() {
   }
 
   const handleCreate = () => {
-    if (workName.trim() && affectDate.trim()) {
+    if (workName.trim()) {
       const newWork: Work = {
         Id: uuidv4(),
         Name: workName,
@@ -93,14 +93,14 @@ export function WorkListPage() {
       };
       addWork(workGroupIndex, newWork);
       setWorkName('');
-      setAffectDate('');
+      setAffectDate(undefined);
       setRemarks('');
       setCreateDialogOpen(false);
     }
   };
 
   const handleEdit = () => {
-    if (editingIndex !== null && workName.trim() && affectDate.trim()) {
+    if (editingIndex !== null && workName.trim()) {
       const work = workGroup.Works[editingIndex];
       updateWork(workGroupIndex, editingIndex, {
         ...work,
@@ -109,7 +109,7 @@ export function WorkListPage() {
         Remarks: remarks,
       });
       setWorkName('');
-      setAffectDate('');
+      setAffectDate(undefined);
       setRemarks('');
       setEditingIndex(null);
       setEditDialogOpen(false);
@@ -303,7 +303,7 @@ export function WorkListPage() {
           <Button
             onClick={handleCreate}
             variant="contained"
-            disabled={!workName.trim() || !affectDate.trim()}
+            disabled={!workName.trim()}
           >
             Create
           </Button>
@@ -344,7 +344,7 @@ export function WorkListPage() {
           <Button
             onClick={handleEdit}
             variant="contained"
-            disabled={!workName.trim() || !affectDate.trim()}
+            disabled={!workName.trim()}
           >
             Save
           </Button>

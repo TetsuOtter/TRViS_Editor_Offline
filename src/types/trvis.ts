@@ -55,7 +55,7 @@ export interface Train {
 export interface Work {
   Id?: string;
   Name: string;
-  AffectDate: string;
+  AffectDate?: string;
   AffixContentType?: number;
   AffixContent?: string;
   Remarks?: string;

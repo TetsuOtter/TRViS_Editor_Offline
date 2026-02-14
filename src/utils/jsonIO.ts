@@ -204,11 +204,6 @@ function isValidWork(work: unknown, path: string): work is Work {
     isValid = false;
   }
 
-  if (!validateString(w.AffectDate, 1)) {
-    addError(`${path}.AffectDate`, 'AffectDate is required and must be a non-empty string');
-    isValid = false;
-  }
-
   if (!Array.isArray(w.Trains)) {
     addError(`${path}.Trains`, 'Trains is required and must be an array');
     isValid = false;
@@ -219,6 +214,12 @@ function isValidWork(work: unknown, path: string): work is Work {
         isValid = false;
       }
     });
+  }
+
+  // Optional fields with constraints
+  if (w.AffectDate !== undefined && !validateString(w.AffectDate, 1)) {
+    addError(`${path}.AffectDate`, 'AffectDate must be a non-empty string');
+    isValid = false;
   }
 
   return isValid;
