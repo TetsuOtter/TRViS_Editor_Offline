@@ -20,6 +20,7 @@ interface ProjectState {
   createProject: (name: string) => Promise<string>;
   deleteProject: (projectId: string) => Promise<void>;
   setActiveProject: (projectId: string) => Promise<void>;
+  clearActiveProject: () => void;
   updateProjectData: (projectId: string, database: Database) => Promise<void>;
   updateProjectMetadata: (projectId: string, metadata: EditorMetadata) => Promise<void>;
 
@@ -181,6 +182,10 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         projectData: Object.values(state.projectData),
         activeProjectId: projectId,
       });
+    },
+
+    clearActiveProject: () => {
+      set({ activeProjectId: null });
     },
 
     updateProjectData: async (projectId: string, database: Database) => {

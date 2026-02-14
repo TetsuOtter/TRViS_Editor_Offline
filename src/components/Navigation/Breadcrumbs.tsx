@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { useNavigate } from 'react-router-dom';
+import { useProjectStore } from '../../store/projectStore';
 
 export interface BreadcrumbItem {
   label: string;
@@ -29,6 +30,7 @@ interface BreadcrumbsProps {
 
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
   const navigate = useNavigate();
+  const clearActiveProject = useProjectStore((state) => state.clearActiveProject);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [activeSiblings, setActiveSiblings] = useState<BreadcrumbItem[]>([]);
   const timeoutRef = useRef<number | null>(null);
@@ -99,6 +101,8 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
             return (
               <Link
                 key={index}
+                role="link"
+                tabIndex={0}
                 underline="hover"
                 color="inherit"
                 sx={{
@@ -107,9 +111,29 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
                     color: 'primary.main',
                   },
                 }}
-                onClick={() => item.path && navigate(item.path)}
+                onClick={() => {
+                  if (item.path) {
+                    // Clear active project when navigating to the project selector page
+                    if (item.path === '/') {
+                      clearActiveProject();
+                    }
+                    navigate(item.path);
+                  }
+                }}
                 onMouseEnter={(e) => handleMouseEnter(e, item.siblings)}
                 onMouseLeave={handleMouseLeave}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (item.path) {
+                      // Clear active project when navigating to the project selector page
+                      if (item.path === '/') {
+                        clearActiveProject();
+                      }
+                      navigate(item.path);
+                    }
+                  }
+                }}
               >
                 {item.label}
               </Link>

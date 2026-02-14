@@ -27,9 +27,9 @@ test.describe('Project Management', () => {
 
     // Should redirect to WorkGroups page
     await page.waitForURL(/\/project\/.*\/workgroups/)
-    
-    // Verify we're on the WorkGroups page
-    await expect(main.getByRole('heading', { name: 'WorkGroups' })).toBeVisible()
+
+    // Verify we're on the WorkGroups page (use h4 to distinguish from "No WorkGroups" h6)
+    await expect(main.locator('h4').filter({ hasText: 'WorkGroups' })).toBeVisible()
   })
 
   test('should switch between projects', async ({ page }) => {

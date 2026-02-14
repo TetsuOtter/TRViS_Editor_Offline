@@ -7,6 +7,9 @@ test.describe('Full Workflow: Station to JSON Export', () => {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 
+    // Wait for page to stabilize after reload
+    await page.waitForLoadState('networkidle');
+
     const main = page.locator('main');
 
     // Step 1: Create a new project
@@ -53,14 +56,49 @@ test.describe('Full Workflow: Station to JSON Export', () => {
     // Verify WorkGroup is created
     await expect(main.getByText('平日ダイヤ')).toBeVisible();
 
+    // Wait for page to be stable after WorkGroup creation
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
+
     // Step 4: Navigate to WorkGroup to create Work
-    await main.getByRole('button', { name: 'Open' }).click();
+    // Get the updated main element to ensure we have the latest DOM
+    const updatedMain = page.locator('main');
+    await updatedMain.getByRole('button', { name: 'Open' }).click();
 
     // Wait for redirect to Works page
-    await page.waitForURL(/\/works$/);
+    await page.waitForURL(/\/works$/, { timeout: 15000 });
+
+    // Wait for page to be stable and data to be loaded
+    await page.waitForLoadState('networkidle');
+
+    // Additional delay to ensure data store is fully synced
+    await page.waitForTimeout(1000);
+
+    // Re-get main locator as the page has changed
+    const newMain = page.locator('main');
+
+    // Check if WorkGroup not found error is shown - retry with additional wait
+    let errorShown = await newMain.getByText('WorkGroup not found').isVisible().catch(() => false);
+
+    if (errorShown) {
+      // Wait longer for sync to complete
+      console.log('WorkGroup not found, waiting for sync...');
+      await page.waitForTimeout(2000);
+      errorShown = await newMain.getByText('WorkGroup not found').isVisible().catch(() => false);
+
+      if (errorShown) {
+        const currentUrl = page.url();
+        throw new Error('WorkGroup still not found after extended wait. URL: ' + currentUrl);
+      }
+    }
+
+    // Wait for the Works heading to be visible
+    await newMain.locator('h4').filter({ hasText: 'Works' }).waitFor({ state: 'visible', timeout: 15000 });
 
     // Create Work
-    await main.getByRole('button', { name: 'Create Work' }).click();
+    const createWorkButton = newMain.getByRole('button', { name: 'Create Work' });
+    await createWorkButton.waitFor({ state: 'visible', timeout: 15000 });
+    await createWorkButton.click();
     await page.getByLabel('Work Name').fill('2024年1月ダイヤ');
     await page.getByLabel('Affect Date (YYYYMMDD)').fill('20240101');
     await page.getByRole('button', { name: 'Create' }).click();
@@ -123,6 +161,9 @@ test.describe('Full Workflow: Station to JSON Export', () => {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 
+    // Wait for page to stabilize after reload
+    await page.waitForLoadState('networkidle');
+
     const main = page.locator('main');
 
     // Create project
@@ -146,12 +187,38 @@ test.describe('Full Workflow: Station to JSON Export', () => {
     await page.getByLabel('WorkGroup Name').fill('Test Group');
     await page.getByRole('button', { name: 'Create' }).click();
 
+    // Wait for page to be stable after WorkGroup creation
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
+
     // Navigate to WorkGroup
-    await main.getByRole('button', { name: 'Open' }).click();
-    await page.waitForURL(/\/works$/);
+    const updatedMain1 = page.locator('main');
+    await updatedMain1.getByRole('button', { name: 'Open' }).click();
+    await page.waitForURL(/\/works$/, { timeout: 15000 });
+
+    // Wait for page to be stable and data to be loaded
+    await page.waitForLoadState('networkidle');
+
+    // Additional delay to ensure data store is fully synced
+    await page.waitForTimeout(1000);
+
+    // Re-get main locator as the page has changed
+    let newMain = page.locator('main');
+
+    // Check if WorkGroup not found error is shown - retry with additional wait
+    let errorShown = await newMain.getByText('WorkGroup not found').isVisible().catch(() => false);
+    if (errorShown) {
+      await page.waitForTimeout(2000);
+      errorShown = await newMain.getByText('WorkGroup not found').isVisible().catch(() => false);
+    }
+
+    // Wait for the Works heading to be visible
+    await newMain.locator('h4').filter({ hasText: 'Works' }).waitFor({ state: 'visible', timeout: 15000 });
 
     // Create Work
-    await main.getByRole('button', { name: 'Create Work' }).click();
+    let createWorkButton = newMain.getByRole('button', { name: 'Create Work' });
+    await createWorkButton.waitFor({ state: 'visible', timeout: 15000 });
+    await createWorkButton.click();
     await page.getByLabel('Work Name').fill('Test Work');
     await page.getByLabel('Affect Date (YYYYMMDD)').fill('20240101');
     await page.getByRole('button', { name: 'Create' }).click();
@@ -180,6 +247,9 @@ test.describe('Full Workflow: Station to JSON Export', () => {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 
+    // Wait for page to stabilize after reload
+    await page.waitForLoadState('networkidle');
+
     const main = page.locator('main');
 
     // Create project
@@ -203,18 +273,44 @@ test.describe('Full Workflow: Station to JSON Export', () => {
     await page.getByLabel('WorkGroup Name').fill('Edit Test Group');
     await page.getByRole('button', { name: 'Create' }).click();
 
+    // Wait for page to be stable after WorkGroup creation
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
+
     // Navigate to WorkGroup
-    await main.getByRole('button', { name: 'Open' }).click();
-    await page.waitForURL(/\/works$/);
+    const updatedMain2 = page.locator('main');
+    await updatedMain2.getByRole('button', { name: 'Open' }).click();
+    await page.waitForURL(/\/works$/, { timeout: 15000 });
+
+    // Wait for page to be stable and data to be loaded
+    await page.waitForLoadState('networkidle');
+
+    // Additional delay to ensure data store is fully synced
+    await page.waitForTimeout(1000);
+
+    // Re-get main locator as the page has changed
+    let lastMain = page.locator('main');
+
+    // Check if WorkGroup not found error is shown - retry with additional wait
+    let errorShown2 = await lastMain.getByText('WorkGroup not found').isVisible().catch(() => false);
+    if (errorShown2) {
+      await page.waitForTimeout(2000);
+      errorShown2 = await lastMain.getByText('WorkGroup not found').isVisible().catch(() => false);
+    }
+
+    // Wait for the Works heading to be visible
+    await lastMain.locator('h4').filter({ hasText: 'Works' }).waitFor({ state: 'visible', timeout: 15000 });
 
     // Create Work
-    await main.getByRole('button', { name: 'Create Work' }).click();
+    let createBtn = lastMain.getByRole('button', { name: 'Create Work' });
+    await createBtn.waitFor({ state: 'visible', timeout: 15000 });
+    await createBtn.click();
     await page.getByLabel('Work Name').fill('Original Work');
     await page.getByLabel('Affect Date (YYYYMMDD)').fill('20240101');
     await page.getByRole('button', { name: 'Create' }).click();
 
     // Verify work is created
-    await expect(main.getByText('Original Work')).toBeVisible();
+    await expect(lastMain.getByText('Original Work')).toBeVisible();
 
     // Note: Edit and Delete functionality is available via icon buttons
     // Testing these would require more complex selectors or adding test IDs

@@ -185,6 +185,7 @@ export function WorkListPage() {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => setCreateDialogOpen(true)}
+          data-testid="create-work-button"
         >
           Create Work
         </Button>

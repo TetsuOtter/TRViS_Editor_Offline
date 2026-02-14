@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Card, CardContent, Stack, Grid } from '@mui/material';
+import { Box, Typography, Grid } from '@mui/material';
 import { useProjectStore } from '../store/projectStore';
 import { useDataStore } from '../store/dataStore';
 import { useEditorStore } from '../store/editorStore';
@@ -13,7 +13,7 @@ function EditorPage() {
   const syncWithProject = useDataStore((state) => state.syncWithProject);
   const syncEditorWithProject = useEditorStore((state) => state.syncWithProject);
 
-  // Sync data when project changes
+  // Sync data when project is selected from the selector
   useEffect(() => {
     if (activeProjectId) {
       syncWithProject(activeProjectId);
