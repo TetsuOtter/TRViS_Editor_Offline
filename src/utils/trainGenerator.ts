@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import type { TrainTypePattern, Station, Line } from '../types/editor';
 import type { TimetableRow } from '../types/trvis';
 import { secondsToTimeString, timeStringToSeconds } from './timeUtils';
@@ -34,7 +35,7 @@ export function generateTimetableFromPattern(
     if (!station) continue;
 
     const row: TimetableRow = {
-      Id: crypto.getRandomValues(new Uint8Array(16)).toString(),
+      Id: uuidv4(),
       StationName: station.name,
       FullName: station.fullName,
       Location_m: lineStation.distanceFromStart_m,

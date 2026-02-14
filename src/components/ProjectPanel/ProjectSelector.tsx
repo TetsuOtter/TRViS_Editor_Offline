@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import {
   Box,
   Button,
@@ -22,9 +23,68 @@ import AddIcon from '@mui/icons-material/Add';
 import UploadIcon from '@mui/icons-material/Upload';
 import { useProjectStore } from '../../store/projectStore';
 import { useDataStore } from '../../store/dataStore';
-import { useEditorStore } from '../../store/editorStore';
 import { parseDatabase, readFileAsText } from '../../utils/jsonIO';
 import type { Database } from '../../types/trvis';
+import type { Station, Line, LineStation, EditorMetadata } from '../../types/editor';
+
+async function extractAndSaveMetadata(projectId: string, database: Database) {
+  // 1. Collect all StationName + Location_m from TimetableRows
+  const stationMap = new Map<
+    string,
+    { name: string; location_m: number; fullName?: string; longitude?: number; latitude?: number }
+  >();
+
+  for (const workGroup of database) {
+    for (const work of workGroup.Works) {
+      for (const train of work.Trains) {
+        for (const row of train.TimetableRows) {
+          if (!stationMap.has(row.StationName)) {
+            stationMap.set(row.StationName, {
+              name: row.StationName,
+              location_m: row.Location_m,
+              fullName: row.FullName,
+              longitude: row.Longitude_deg,
+              latitude: row.Latitude_deg,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Sort by Location_m ascending
+  const sortedStations = [...stationMap.values()].sort((a, b) => a.location_m - b.location_m);
+
+  // 3. Generate Station objects
+  const stations: Station[] = sortedStations.map((s) => ({
+    id: uuidv4(),
+    name: s.name,
+    fullName: s.fullName,
+    longitude: s.longitude,
+    latitude: s.latitude,
+  }));
+
+  // 4. Generate LineStation & Line
+  const lineStations: LineStation[] = stations.map((station, index) => ({
+    stationId: station.id,
+    distanceFromStart_m: sortedStations[index].location_m,
+  }));
+
+  const line: Line = {
+    id: uuidv4(),
+    name: database[0]?.Name ?? 'Imported Line',
+    stations: lineStations,
+  };
+
+  // 5. Save metadata
+  const metadata: EditorMetadata = {
+    stations,
+    lines: [line],
+    trainTypePatterns: [],
+  };
+
+  await useProjectStore.getState().updateProjectMetadata(projectId, metadata);
+}
 
 export function ProjectSelector() {
   const projects = useProjectStore((state) => state.projects);
@@ -34,7 +94,6 @@ export function ProjectSelector() {
   const updateProjectData = useProjectStore((state) => state.updateProjectData);
 
   const setWorkGroups = useDataStore((state) => state.setWorkGroups);
-  const setEditorMetadata = useEditorStore((state) => state.setMetadata);
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
@@ -74,13 +133,11 @@ export function ProjectSelector() {
       // Update project with imported database and persist to localStorage
       await updateProjectData(newProjectId, data as Database);
 
+      // Auto-generate Line and Stations from JSON
+      await extractAndSaveMetadata(newProjectId, data as Database);
+
       // Update UI state
       setWorkGroups(data);
-      setEditorMetadata({
-        stations: [],
-        lines: [],
-        trainTypePatterns: [],
-      });
     } catch (error) {
       setImportError(
         `Failed to import file: ${error instanceof Error ? error.message : 'Unknown error'}`
