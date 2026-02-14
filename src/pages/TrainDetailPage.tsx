@@ -70,8 +70,8 @@ export function TrainDetailPage() {
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [trainNumber, setTrainNumber] = useState('');
-  const [direction, setDirection] = useState<1 | -1>(1);
-  const [maxSpeed, setMaxSpeed] = useState<number | ''>('');
+  const [direction, setDirection] = useState<number>(1);
+  const [maxSpeed, setMaxSpeed] = useState<string>('');
   const [carCount, setCarCount] = useState<number | ''>('');
   const [destination, setDestination] = useState('');
   const [remarks, setRemarks] = useState('');
@@ -267,10 +267,10 @@ export function TrainDetailPage() {
             />
             <TextField
               fullWidth
-              type="number"
+              type="text"
               label="Max Speed (km/h)"
               value={maxSpeed}
-              onChange={(e) => setMaxSpeed(e.target.value ? parseFloat(e.target.value) : '')}
+              onChange={(e) => setMaxSpeed(e.target.value)}
             />
             <TextField
               fullWidth

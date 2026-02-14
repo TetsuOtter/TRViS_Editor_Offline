@@ -87,8 +87,8 @@ export function TrainListPage() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [cloneTrainIndex, setCloneTrainIndex] = useState<number | null>(null);
   const [trainNumber, setTrainNumber] = useState('');
-  const [direction, setDirection] = useState<1 | -1>(1);
-  const [maxSpeed, setMaxSpeed] = useState<number | ''>('');
+  const [direction, setDirection] = useState<number>(1);
+  const [maxSpeed, setMaxSpeed] = useState<string>('');
   const [carCount, setCarCount] = useState<number | ''>('');
   const [cloneTrainNumber, setCloneTrainNumber] = useState('');
   const [selectedPatternId, setSelectedPatternId] = useState<string>('');
@@ -389,10 +389,10 @@ export function TrainListPage() {
             />
             <TextField
               fullWidth
-              type="number"
+              type="text"
               label="Max Speed (km/h)"
               value={maxSpeed}
-              onChange={(e) => setMaxSpeed(e.target.value ? parseFloat(e.target.value) : '')}
+              onChange={(e) => setMaxSpeed(e.target.value)}
             />
             <TextField
               fullWidth
@@ -431,10 +431,10 @@ export function TrainListPage() {
             />
             <TextField
               fullWidth
-              type="number"
+              type="text"
               label="Max Speed (km/h)"
               value={maxSpeed}
-              onChange={(e) => setMaxSpeed(e.target.value ? parseFloat(e.target.value) : '')}
+              onChange={(e) => setMaxSpeed(e.target.value)}
             />
             <TextField
               fullWidth

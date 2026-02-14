@@ -107,11 +107,13 @@ export function TimetableGrid({
 
     for (let i = timeAdjust.startRowIndex + 1; i < train.TimetableRows.length; i++) {
       const row = { ...train.TimetableRows[i] };
-      if (row.Arrive) {
-        row.Arrive = adjustTime(row.Arrive, timeAdjust.deltaSeconds);
+      if (row.Arrive !== undefined) {
+        const adjusted = adjustTime(row.Arrive, timeAdjust.deltaSeconds);
+        row.Arrive = adjusted || undefined;
       }
-      if (row.Departure) {
-        row.Departure = adjustTime(row.Departure, timeAdjust.deltaSeconds);
+      if (row.Departure !== undefined) {
+        const adjusted = adjustTime(row.Departure, timeAdjust.deltaSeconds);
+        row.Departure = adjusted || undefined;
       }
       updateTimetableRow(workGroupIndex, workIndex, trainIndex, i, row);
     }

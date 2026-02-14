@@ -187,7 +187,7 @@ export function TrainEditor({ workGroupIndex, workIndex }: TrainEditorProps) {
                     ...editingTrain,
                     train: {
                       ...editingTrain.train,
-                      MaxSpeed: e.target.value ? parseFloat(e.target.value) : undefined,
+                      MaxSpeed: e.target.value || undefined,
                     },
                   })
                 }

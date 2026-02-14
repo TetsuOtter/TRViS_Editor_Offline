@@ -81,10 +81,10 @@ export const mockWork: Work = {
 // Sample train
 export const mockTrain: Train = {
   TrainNumber: '001',
-  MaxSpeed: 120,
+  MaxSpeed: '120',
   CarCount: 10,
   Destination: '品川',
-  Direction: 1 as 1 | -1,
+  Direction: 1,
   TimetableRows: [],
 }
 
@@ -93,7 +93,6 @@ export const mockTimetableRows: TimetableRow[] = [
   {
     StationName: '東京',
     Location_m: 0,
-    Arrive: null,
     Departure: '06:00:00',
     TrackName: '1',
   },
@@ -108,7 +107,6 @@ export const mockTimetableRows: TimetableRow[] = [
     StationName: '新横浜',
     Location_m: 25000,
     Arrive: '06:20:00',
-    Departure: null,
     TrackName: '2',
   },
 ]

@@ -68,22 +68,21 @@ describe('Data Flow: UI → Store → Repository', () => {
               {
                 Id: uuidv4(),
                 TrainNumber: 'LX001',
-                Direction: 1 as 1 | -1,
-                MaxSpeed: 100,
+                Direction: 1,
+                MaxSpeed: '100',
                 CarCount: 6,
                 TimetableRows: [
                   {
                     StationName: 'Station A',
                     Location_m: 0,
-                    ArrivalTime: null,
-                    DepartureTime: '06:00:00',
+                    Departure: '06:00:00',
                     TrackName: '1',
                   },
                   {
                     StationName: 'Station B',
                     Location_m: 5000,
-                    ArrivalTime: '06:05:00',
-                    DepartureTime: '06:06:00',
+                    Arrive: '06:05:00',
+                    Departure: '06:06:00',
                     TrackName: '1',
                   },
                 ],
@@ -274,15 +273,14 @@ describe('Data Flow: UI → Store → Repository', () => {
               {
                 Id: uuidv4(),
                 TrainNumber: 'TEST001',
-                Direction: 1 as 1 | -1,
-                MaxSpeed: 120,
+                Direction: 1,
+                MaxSpeed: '120',
                 CarCount: 8,
                 TimetableRows: [
                   {
                     StationName: 'St A',
                     Location_m: 0,
-                    ArrivalTime: null,
-                    DepartureTime: '06:00:00',
+                    Departure: '06:00:00',
                   },
                 ],
               },
