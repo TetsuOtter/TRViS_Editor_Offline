@@ -24,12 +24,14 @@ import { useProjectStore } from '../../store/projectStore';
 import { useDataStore } from '../../store/dataStore';
 import { useEditorStore } from '../../store/editorStore';
 import { parseDatabase, readFileAsText } from '../../utils/jsonIO';
+import type { Database } from '../../types/trvis';
 
 export function ProjectSelector() {
   const projects = useProjectStore((state) => state.projects);
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
   const createProject = useProjectStore((state) => state.createProject);
   const deleteProject = useProjectStore((state) => state.deleteProject);
+  const updateProjectData = useProjectStore((state) => state.updateProjectData);
 
   const setWorkGroups = useDataStore((state) => state.setWorkGroups);
   const setEditorMetadata = useEditorStore((state) => state.setMetadata);
@@ -67,21 +69,18 @@ export function ProjectSelector() {
 
       // Create new project with imported data
       const projectName = file.name.replace(/\.json$/, '');
-      createProject(projectName);
+      const newProjectId = await createProject(projectName);
 
-      // Wait for project to be created
-      setTimeout(() => {
-        const newProjectId = useProjectStore.getState().activeProjectId;
-        if (newProjectId) {
-          setWorkGroups(data);
-          // Initialize empty metadata for imported project
-          setEditorMetadata({
-            stations: [],
-            lines: [],
-            trainTypePatterns: [],
-          });
-        }
-      }, 0);
+      // Update project with imported database and persist to localStorage
+      await updateProjectData(newProjectId, data as Database);
+
+      // Update UI state
+      setWorkGroups(data);
+      setEditorMetadata({
+        stations: [],
+        lines: [],
+        trainTypePatterns: [],
+      });
     } catch (error) {
       setImportError(
         `Failed to import file: ${error instanceof Error ? error.message : 'Unknown error'}`
