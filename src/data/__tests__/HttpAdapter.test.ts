@@ -331,7 +331,7 @@ describe('HttpAdapter', () => {
       const project = createMockProject();
       await adapter.createProject(project);
 
-      let status = adapter.getSyncStatus();
+      const status = adapter.getSyncStatus();
       expect(status.isSynced).toBe(false);
 
       // Come back online

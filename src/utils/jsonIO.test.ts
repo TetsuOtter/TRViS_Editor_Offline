@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { isValidDatabase, parseDatabase, databaseToJSON, downloadDatabase, readFileAsText } from './jsonIO'
-import type { Database, WorkGroup, Work, Train, TimetableRow } from '../types/trvis'
+import { isValidDatabase, parseDatabase, databaseToJSON, downloadDatabase } from './jsonIO'
+import type { Database } from '../types/trvis'
 
 describe('jsonIO', () => {
   describe('isValidDatabase', () => {
