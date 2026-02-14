@@ -129,28 +129,62 @@ function ThirdPartyLicensesPage() {
                   },
                 }}
               >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="h6">{license.name}</Typography>
-                    <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    justifyContent: { md: 'space-between' },
+                    alignItems: { xs: 'flex-start', md: 'start' },
+                    gap: { xs: 1, md: 0 },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      gap: 1,
+                      width: { xs: '100%', md: 'auto' },
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ mb: 0 }}>{license.name}</Typography>
+                    <Typography variant="body2" color="textSecondary">
                       v{license.version}
                     </Typography>
                   </Box>
-                  <Chip
-                    label={license.license}
-                    color={getLicenseTypeColor(license.license)}
-                    variant="outlined"
-                    size="small"
-                  />
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      width: { xs: '100%', md: 'auto' },
+                      justifyContent: { xs: 'space-between', md: 'flex-end' },
+                    }}
+                  >
+                    {license.repository && (
+                      <Typography variant="body2">
+                        <a
+                          href={license.repository}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: 'inherit',
+                            textDecoration: 'underline',
+                            textDecorationColor: 'currentColor',
+                          }}
+                        >
+                          Repository
+                        </a>
+                      </Typography>
+                    )}
+                    <Chip
+                      label={license.license}
+                      color={getLicenseTypeColor(license.license)}
+                      variant="outlined"
+                      size="small"
+                    />
+                  </Box>
                 </Box>
-
-                {license.repository && (
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    <a href={license.repository} target="_blank" rel="noopener noreferrer">
-                      Repository
-                    </a>
-                  </Typography>
-                )}
 
                 {expandedLicense === license.name && license.licenseText && (
                   <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
@@ -159,7 +193,9 @@ function ThirdPartyLicensesPage() {
                     </Typography>
                     <Box
                       sx={{
-                        backgroundColor: '#f5f5f5',
+                        backgroundColor: 'background.paper',
+                        border: '1px solid',
+                        borderColor: 'divider',
                         p: 2,
                         borderRadius: 1,
                         overflow: 'auto',
