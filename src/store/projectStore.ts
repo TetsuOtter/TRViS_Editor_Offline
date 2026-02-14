@@ -4,6 +4,7 @@ import type { ProjectData } from '../types/storage';
 import type { Database } from '../types/trvis';
 import type { IDataRepository } from '../data/types';
 import { repositoryFactory } from '../data/RepositoryFactory';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ProjectState {
   projects: Project[];
@@ -96,7 +97,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
 
     createProject: async (name: string) => {
       const repo = await getRepository();
-      const projectId = crypto.randomUUID();
+      const projectId = uuidv4();
       const now = Date.now();
 
       const newProjectData: ProjectData = {

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Work, Train, TimetableRow, WorkGroup } from '../types/trvis';
 import { useProjectStore } from './projectStore';
+import { v4 as uuidv4 } from 'uuid';
 
 interface DataState {
   workGroups: WorkGroup[];
@@ -162,7 +163,7 @@ export const useDataStore = create<DataState>((set, get) => ({
 
     const clonedTrain: Train = {
       ...train,
-      Id: crypto.randomUUID(),
+      Id: uuidv4(),
       TrainNumber: newTrainNumber,
     };
 
