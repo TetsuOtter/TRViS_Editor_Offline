@@ -88,7 +88,7 @@ export function TimetableGrid({
 
   const processRowUpdate = (newRow: (typeof rows)[0]) => {
     const updatedRow = { ...newRow };
-    delete (updatedRow as any).id;
+    delete (updatedRow as Record<string, unknown>).id;
     updateTimetableRow(
       workGroupIndex,
       workIndex,

@@ -3,6 +3,9 @@ import { render, type RenderOptions } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
+import { vi } from 'vitest'
+
+/* eslint-disable react-refresh/only-export-components */
 
 const testTheme = createTheme()
 

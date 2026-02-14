@@ -10,6 +10,7 @@ import { useProjectStore } from '../../store/projectStore';
 import { useDataStore } from '../../store/dataStore';
 import { useEditorStore } from '../../store/editorStore';
 import { v4 as uuidv4 } from 'uuid';
+import type { ProjectData } from '../../types/storage';
 
 describe('Data Flow: UI → Store → Repository', () => {
   beforeEach(async () => {
@@ -105,7 +106,7 @@ describe('Data Flow: UI → Store → Repository', () => {
 
       // Verify in localStorage
       const stored = JSON.parse(localStorage.getItem('trvis-projects')!);
-      const storedProject = stored.projectData.find((p: any) => p.projectId === projectId);
+      const storedProject = stored.projectData.find((p: ProjectData) => p.projectId === projectId);
       expect(storedProject.database).toHaveLength(1);
     });
 
@@ -155,7 +156,7 @@ describe('Data Flow: UI → Store → Repository', () => {
 
       // Verify in localStorage
       const stored = JSON.parse(localStorage.getItem('trvis-projects')!);
-      const storedProject = stored.projectData.find((p: any) => p.projectId === projectId);
+      const storedProject = stored.projectData.find((p: ProjectData) => p.projectId === projectId);
       expect(storedProject.metadata.stations).toHaveLength(2);
       expect(storedProject.metadata.lines).toHaveLength(1);
     });
@@ -330,7 +331,7 @@ describe('Data Flow: UI → Store → Repository', () => {
 
       // Verify in localStorage
       const stored = JSON.parse(localStorage.getItem('trvis-projects')!);
-      const storedProject = stored.projectData.find((p: any) => p.projectId === projectId);
+      const storedProject = stored.projectData.find((p: ProjectData) => p.projectId === projectId);
       expect(storedProject.database).toHaveLength(5);
     });
   });

@@ -51,6 +51,7 @@ describe('RepositoryFactory', () => {
     it('should throw error for unknown type', () => {
       expect(() =>
         factory.createRepository({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           type: 'unknown' as any,
           baseUrl: 'http://localhost:3000',
         })

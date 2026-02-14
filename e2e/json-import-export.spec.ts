@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import path from 'path'
 
 test.describe('JSON Import/Export', () => {
   test.beforeEach(async ({ page }) => {

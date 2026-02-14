@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { HttpAdapter } from '../adapters/HttpAdapter';
-import { ProjectData } from '../../types/storage';
+import type { ProjectData } from '../../types/storage';
 import { v4 as uuidv4 } from 'uuid';
 
 describe('HttpAdapter', () => {
@@ -14,11 +14,11 @@ describe('HttpAdapter', () => {
   const baseUrl = 'http://localhost:3000';
 
   const createMockProject = (overrides?: Partial<ProjectData>): ProjectData => ({
-    id: uuidv4(),
+    projectId: uuidv4(),
     name: 'Test Project',
     createdAt: Date.now(),
     lastModified: Date.now(),
-    database: { workGroups: [] },
+    database: [],
     metadata: {
       stations: [],
       lines: [],
@@ -80,7 +80,9 @@ describe('HttpAdapter', () => {
       const result = await adapter.createProject(project);
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(project);
+      if (result.success) {
+        expect(result.data).toEqual(project);
+      }
       expect(mockFetch).toHaveBeenCalledWith(
         `${baseUrl}/api/projects`,
         expect.objectContaining({
@@ -140,7 +142,9 @@ describe('HttpAdapter', () => {
       const result = await adapter.createProject(project);
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Persistent failure');
+      if (!result.success) {
+        expect(result.error).toContain('Persistent failure');
+      }
     });
   });
 
@@ -156,12 +160,14 @@ describe('HttpAdapter', () => {
       vi.stubGlobal('fetch', mockFetch);
 
       await adapter.initialize();
-      const result = await adapter.getProject(project.id);
+      const result = await adapter.getProject(project.projectId);
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(project);
+      if (result.success) {
+        expect(result.data).toEqual(project);
+      }
       expect(mockFetch).toHaveBeenCalledWith(
-        `${baseUrl}/api/projects/${project.id}`,
+        `${baseUrl}/api/projects/${project.projectId}`,
         expect.objectContaining({ method: 'GET' })
       );
     });
@@ -180,7 +186,9 @@ describe('HttpAdapter', () => {
       const result = await adapter.getProject(projectId);
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('HTTP 404');
+      if (!result.success) {
+        expect(result.error).toContain('HTTP 404');
+      }
     });
   });
 
@@ -196,11 +204,11 @@ describe('HttpAdapter', () => {
       vi.stubGlobal('fetch', mockFetch);
 
       await adapter.initialize();
-      const result = await adapter.updateProject(project.id, project);
+      const result = await adapter.updateProject(project.projectId, project);
 
       expect(result.success).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
-        `${baseUrl}/api/projects/${project.id}`,
+        `${baseUrl}/api/projects/${project.projectId}`,
         expect.objectContaining({ method: 'PUT' })
       );
     });
@@ -210,7 +218,7 @@ describe('HttpAdapter', () => {
       vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('Network error'))));
 
       await adapter.initialize();
-      const result = await adapter.updateProject(project.id, project);
+      const result = await adapter.updateProject(project.projectId, project);
 
       expect(result.success).toBe(false);
       const status = adapter.getSyncStatus();
@@ -303,7 +311,7 @@ describe('HttpAdapter', () => {
 
       // Queue some operations
       await adapter.createProject(project);
-      await adapter.updateProject(project.id, project);
+      await adapter.updateProject(project.projectId, project);
 
       let status = adapter.getSyncStatus();
       expect(status.pendingChanges).toBeGreaterThan(0);
@@ -373,7 +381,9 @@ describe('HttpAdapter', () => {
       const result = await adapter.createProject(project);
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Request failed');
+      if (!result.success) {
+        expect(result.error).toContain('Request failed');
+      }
     }, 15000);
   });
 
@@ -393,7 +403,9 @@ describe('HttpAdapter', () => {
       const result = await adapter.createProject(project);
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('HTTP 500');
+      if (!result.success) {
+        expect(result.error).toContain('HTTP 500');
+      }
     });
 
     it('should handle invalid JSON responses', async () => {
@@ -450,7 +462,9 @@ describe('HttpAdapter', () => {
       const result = await adapter.getAllProjects();
 
       expect(result.success).toBe(true);
-      expect(result.data.projectData).toEqual(projects);
+      if (result.success) {
+        expect(result.data.projectData).toEqual(projects);
+      }
     });
 
     it('should save and load storage state', async () => {
@@ -476,7 +490,9 @@ describe('HttpAdapter', () => {
       // Load
       const loadResult = await adapter.loadStorageState();
       expect(loadResult.success).toBe(true);
-      expect(loadResult.data).toEqual(state);
+      if (loadResult.success) {
+        expect(loadResult.data).toEqual(state);
+      }
     });
   });
 

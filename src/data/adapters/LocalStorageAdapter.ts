@@ -33,7 +33,7 @@ export class LocalStorageAdapter implements IDataRepository {
       if (existingData) {
         try {
           JSON.parse(existingData);
-        } catch (e) {
+        } catch {
           return { success: false, error: 'Corrupted localStorage data' };
         }
       }

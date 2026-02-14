@@ -8,7 +8,6 @@ describe('jsonIO', () => {
       const validDatabase: Database = [
         {
           Name: 'Test WorkGroup',
-          Description: 'Test description',
           Works: [
             {
               Name: 'Test Work',
@@ -21,16 +20,15 @@ describe('jsonIO', () => {
                   MaxSpeed: 120,
                   CarCount: 10,
                   Destination: 'Tokyo',
-                  WorkType: 'Regular',
+                  WorkType: 0,
                   TimetableRows: [
                     {
                       StationName: 'Tokyo',
                       FullName: 'Tokyo Station',
                       Arrive: '',
                       Departure: '06:00:00',
-                      Track: '1',
+                      TrackName: '1',
                       Location_m: 0,
-                      StopType: 0
                     }
                   ]
                 }
@@ -330,7 +328,7 @@ describe('jsonIO', () => {
         download: '',
         click: vi.fn(),
         remove: vi.fn(),
-      } as any
+      } as unknown as HTMLAnchorElement
 
       document.createElement = vi.fn().mockReturnValue(mockElement)
       document.body.appendChild = vi.fn()

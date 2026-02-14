@@ -10,6 +10,7 @@ import { useProjectStore } from '../projectStore';
 import { useDataStore } from '../dataStore';
 import { useEditorStore } from '../editorStore';
 import { v4 as uuidv4 } from 'uuid';
+import type { Database } from '../../types/trvis';
 
 describe('ProjectStore Integration with Repository', () => {
   beforeEach(async () => {
@@ -220,7 +221,7 @@ describe('ProjectStore Integration with Repository', () => {
 
     it('should persist activeProjectId to repository', async () => {
       const id1 = await useProjectStore.getState().createProject('Project 1');
-      const id2 = await useProjectStore.getState().createProject('Project 2');
+      await useProjectStore.getState().createProject('Project 2');
 
       await useProjectStore.getState().setActiveProject(id1);
 
@@ -273,7 +274,7 @@ describe('ProjectStore Integration with Repository', () => {
     });
 
     it('should handle update of non-existent project', async () => {
-      const database = { workGroups: [] };
+      const database: Database = [];
 
       await expect(
         useProjectStore.getState().updateProjectData('non-existent-id', database)
@@ -314,7 +315,6 @@ describe('ProjectStore Integration with Repository', () => {
   describe('Sync Status', () => {
     it('should track sync status', async () => {
       const projectId = await useProjectStore.getState().createProject('Test Project');
-      const status = useProjectStore.getState().getSyncStatus?.();
 
       // Just verify the methods work without throwing
       expect(projectId).toBeDefined();

@@ -62,7 +62,7 @@ export class HttpAdapter implements IDataRepository {
       this.isInitialized = true;
       return { success: true, data: undefined };
     } catch (error) {
-      console.warn('HttpAdapter initialization failed, will use offline mode');
+      console.warn('HttpAdapter initialization failed, will use offline mode', error);
       this.isInitialized = true;
       return { success: true, data: undefined };
     }
@@ -106,12 +106,12 @@ export class HttpAdapter implements IDataRepository {
       if (result.success) {
         this.syncStatus.isSynced = true;
       } else {
-        this.queuePendingOperation('create', project.id, project);
+        this.queuePendingOperation('create', project.projectId, project);
       }
 
       return result;
     } catch (error) {
-      this.queuePendingOperation('create', project.id, project);
+      this.queuePendingOperation('create', project.projectId, project);
       return { success: false, error: `Failed to create project: ${String(error)}` };
     }
   }
@@ -189,7 +189,7 @@ export class HttpAdapter implements IDataRepository {
         success: true,
         data: {
           projectData: projectsResult.data,
-          activeProjectId: projectsResult.data[0]?.id || null,
+          activeProjectId: projectsResult.data[0]?.projectId || null,
         },
       };
     } catch (error) {

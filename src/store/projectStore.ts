@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Project } from '../types/editor';
+import type { Project, EditorMetadata } from '../types/editor';
 import type { ProjectData } from '../types/storage';
 import type { Database } from '../types/trvis';
 import type { IDataRepository } from '../data/types';
@@ -20,7 +20,7 @@ interface ProjectState {
   deleteProject: (projectId: string) => Promise<void>;
   setActiveProject: (projectId: string) => Promise<void>;
   updateProjectData: (projectId: string, database: Database) => Promise<void>;
-  updateProjectMetadata: (projectId: string, metadata: any) => Promise<void>;
+  updateProjectMetadata: (projectId: string, metadata: EditorMetadata) => Promise<void>;
 
   // Queries
   getActiveProjectData: () => ProjectData | null;
@@ -210,7 +210,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       });
     },
 
-    updateProjectMetadata: async (projectId: string, metadata: any) => {
+    updateProjectMetadata: async (projectId: string, metadata: EditorMetadata) => {
       const repo = await getRepository();
       const { projectData } = get();
       const current = projectData[projectId];
