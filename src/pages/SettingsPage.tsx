@@ -1,7 +1,9 @@
-import { Box, Typography, Card, CardContent, Button, Stack, Alert, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button, Stack, Alert, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import GavelIcon from '@mui/icons-material/Gavel';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { JsonImport } from '../components/ImportExport/JsonImport';
 import { AppLinkButton } from '../components/ImportExport/AppLinkButton';
 import { useTheme } from '../contexts/ThemeContext';
@@ -9,6 +11,7 @@ import { useTheme } from '../contexts/ThemeContext';
 function SettingsPage() {
   const navigate = useNavigate();
   const { mode, setMode } = useTheme();
+  const [openClearDialog, setOpenClearDialog] = useState(false);
 
   const handleExportStorage = () => {
     const allData = localStorage;
@@ -63,6 +66,13 @@ function SettingsPage() {
       reader.readAsText(file);
     };
     input.click();
+  };
+
+  const handleClearStorage = () => {
+    localStorage.clear();
+    setOpenClearDialog(false);
+    alert('All data has been cleared. Reloading the application...');
+    window.location.reload();
   };
 
   return (
@@ -151,6 +161,31 @@ function SettingsPage() {
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
+              Clear All Data
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+              Delete all local data including projects, workgroups, works, trains, and all stored settings. This action cannot be undone.
+            </Typography>
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={() => setOpenClearDialog(true)}
+            >
+              Clear All Data
+            </Button>
+
+            <Alert severity="warning" sx={{ mt: 2 }}>
+              <Typography variant="body2">
+                This will permanently delete all data stored locally. Make sure to export a backup first if you want to preserve your data.
+              </Typography>
+            </Alert>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
               Third Party Licenses
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
@@ -166,6 +201,28 @@ function SettingsPage() {
           </CardContent>
         </Card>
       </Stack>
+
+      <Dialog
+        open={openClearDialog}
+        onClose={() => setOpenClearDialog(false)}
+      >
+        <DialogTitle>Clear All Data?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This will permanently delete all your data including projects, workgroups, works, trains, and all settings. This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenClearDialog(false)}>Cancel</Button>
+          <Button
+            onClick={handleClearStorage}
+            color="error"
+            variant="contained"
+          >
+            Clear All Data
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
